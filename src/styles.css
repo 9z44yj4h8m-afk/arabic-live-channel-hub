@@ -32,27 +32,27 @@
 }
 
 :root {
-  --background: oklch(0.16 0.035 170);
-  --foreground: oklch(0.97 0.01 258);
-  --surface: oklch(0.2 0.04 168);
-  --surface-deep: oklch(0.12 0.03 170);
-  --card: oklch(0.2 0.045 165);
-  --card-foreground: oklch(0.97 0.01 258);
-  --primary: oklch(0.62 0.19 150);
-  --primary-foreground: oklch(0.98 0.005 260);
-  --secondary: oklch(0.25 0.05 165);
-  --secondary-foreground: oklch(0.93 0.015 258);
-  --muted: oklch(0.23 0.035 168);
-  --muted-foreground: oklch(0.75 0.03 150);
+  --background: oklch(0.14 0.045 268);
+  --foreground: oklch(0.96 0.015 95);
+  --surface: oklch(0.19 0.05 266);
+  --surface-deep: oklch(0.1 0.035 268);
+  --card: oklch(0.18 0.05 264);
+  --card-foreground: oklch(0.96 0.015 95);
+  --primary: oklch(0.76 0.13 85);
+  --primary-foreground: oklch(0.16 0.04 268);
+  --secondary: oklch(0.24 0.06 264);
+  --secondary-foreground: oklch(0.93 0.02 95);
+  --muted: oklch(0.22 0.05 264);
+  --muted-foreground: oklch(0.72 0.04 250);
   --accent: oklch(0.8 0.13 85);
-  --accent-foreground: oklch(0.18 0.03 170);
-  --border: oklch(0.55 0.09 110 / 45%);
-  --input: oklch(0.32 0.05 165);
+  --accent-foreground: oklch(0.16 0.03 268);
+  --border: oklch(0.65 0.1 85 / 40%);
+  --input: oklch(0.3 0.06 264);
   --ring: oklch(0.8 0.13 85);
   --live: oklch(0.62 0.24 20);
   --live-foreground: oklch(0.99 0.005 260);
   --signal: oklch(0.62 0.24 20);
-  --sky: oklch(0.82 0.13 85);
+  --sky: oklch(0.75 0.14 230);
 }
 
 @layer base {
@@ -269,4 +269,45 @@
   background: linear-gradient(180deg, color-mix(in oklab, var(--primary) 85%, white), var(--primary)) !important;
   color: var(--primary-foreground) !important;
   box-shadow: 0 0 18px color-mix(in oklab, var(--primary) 55%, transparent) !important;
+}
+
+@utility tpl-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 2px solid color-mix(in oklab, var(--accent) 80%, transparent);
+  background: var(--surface-deep);
+  box-shadow: 0 0 0 4px var(--surface-deep), 0 0 0 5px color-mix(in oklab, var(--accent) 45%, transparent), 0 24px 70px color-mix(in oklab, var(--background) 80%, transparent), 0 0 44px color-mix(in oklab, var(--accent) 22%, transparent);
+}
+
+@utility tpl-top-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 3.3rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid color-mix(in oklab, var(--accent) 55%, var(--border));
+  border-radius: 0.8rem;
+  background: color-mix(in oklab, var(--surface) 88%, transparent);
+  color: var(--foreground);
+  font-size: 0.62rem;
+  font-weight: 800;
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  &:hover { border-color: var(--accent); box-shadow: 0 0 14px color-mix(in oklab, var(--accent) 35%, transparent); }
+  &:active { transform: scale(0.94); }
+}
+
+@utility tpl-card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 1.1rem;
+  border: 2px solid color-mix(in oklab, var(--accent) 75%, transparent);
+  background: var(--surface-deep);
+  box-shadow: 0 0 0 3px var(--surface-deep), 0 0 0 4px color-mix(in oklab, var(--accent) 40%, transparent), 0 14px 40px color-mix(in oklab, var(--background) 70%, transparent);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  &:hover { transform: translateY(-3px); box-shadow: 0 0 0 3px var(--surface-deep), 0 0 0 4px color-mix(in oklab, var(--accent) 70%, transparent), 0 18px 50px color-mix(in oklab, var(--background) 70%, transparent), 0 0 30px color-mix(in oklab, var(--accent) 30%, transparent); }
+  &:active { transform: translateY(-1px) scale(0.99); }
 }

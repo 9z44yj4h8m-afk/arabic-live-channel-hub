@@ -5,22 +5,26 @@ import { publicChannelsQuery } from "@/lib/channel-catalog.query";
 import {
   ArrowRight,
   Baby,
-  Bell,
+  ChevronLeft,
   Clapperboard,
   Film,
   Home,
   ListVideo,
+  Menu,
   MessageCircle,
   MoonStar,
   Newspaper,
   Play,
   Search,
+  Settings,
   Signal,
   Sparkles,
   Trophy,
   Tv,
+  User,
   Volume2,
   WandSparkles,
+  X,
   type LucideIcon,
   RefreshCw,
   WifiOff,
@@ -28,9 +32,13 @@ import {
 import { type FormEvent, startTransition, useEffect, useState } from "react";
 import { markActive, useInactiveChannels } from "@/lib/inactive-channels";
 
-import kaabaEmblem from "@/assets/kaaba-emblem.jpg";
-import mosqueBg from "@/assets/mosque-bg.png.asset.json";
-import riyadhBg from "@/assets/riyadh-bg.png.asset.json";
+import tplBg from "@/assets/tpl-bg.jpg";
+import tplLogo from "@/assets/tpl-logo.png";
+import tplWolf from "@/assets/tpl-wolf.png";
+import tplCardLive from "@/assets/tpl-card-live.jpg";
+import tplCardSeries from "@/assets/tpl-card-series.jpg";
+import tplCardMovies from "@/assets/tpl-card-movies.jpg";
+import tplShield from "@/assets/tpl-shield.png";
 import { InstallAppButton } from "@/components/install-app-button";
 import { LivePlayer } from "@/components/live-player";
 import { Button } from "@/components/ui/button";
@@ -55,6 +63,12 @@ const sections: {
 
 export const liveSections = sections;
 
+const mainCards = [
+  { title: "الأفلام", img: tplCardMovies, to: "/movies" as const },
+  { title: "المسلسلات", img: tplCardSeries, to: "/channels/$section" as const, params: { section: "series" } },
+  { title: "البث", img: tplCardLive, to: "/live" as const },
+];
+
 export function PortalPage({ section }: { section?: string }) {
   const { data: channels } = useSuspenseQuery(publicChannelsQuery);
   const visibleSections = section ? sections.filter((s) => s.slug === section) : sections;
@@ -65,6 +79,8 @@ export function PortalPage({ section }: { section?: string }) {
   const [searchResultIds, setSearchResultIds] = useState<string[] | null>(null);
   const [searchError, setSearchError] = useState("");
   const [searching, setSearching] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("channel");
     const found = id && channels.find((c) => c.id === id);
@@ -140,57 +156,66 @@ export function PortalPage({ section }: { section?: string }) {
 
   if (!selected) return <div className="min-h-screen grid place-items-center text-muted-foreground">لا توجد قنوات متاحة حاليًا</div>;
   const previewMode = !section;
-  const heroTitle = section === "live" || !section ? "القنوات المباشرة" : `قنوات ${visibleSections[0]?.title ?? ""} مباشرة`;
-  const heroSub = section === "islamic" ? "تلاوات وبرامج إيمانية على مدار الساعة" : "تابع القنوات المباشرة من مكان واحد";
 
   return (
-    <div dir="rtl" className="min-h-screen overflow-x-hidden bg-background text-foreground">
-      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
-        <div className="mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:h-20 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-1 sm:gap-2">
-            {section && (
-              <button
-                type="button"
-                onClick={goBack}
-                className="icon-button shrink-0"
-                aria-label="رجوع"
-                title="رجوع"
-              >
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            )}
-            <a href="#player" className="flex min-w-0 items-center gap-3" aria-label="ALMOGHANI">
-            <img src={kaabaEmblem} alt="" width={816} height={816} className="h-11 w-11 shrink-0 rounded-full border border-primary object-cover" />
-            <span className="h-9 w-px bg-border" />
-            <span className="min-w-0 text-center">
-              <span className="block font-display text-xs font-bold text-foreground underline decoration-primary underline-offset-4">almoghani.net</span>
-              <span className="block truncate text-sm font-bold text-muted-foreground sm:text-base">صفحة شخصية من اجتهادي</span>
-            </span>
-          </a>
-          </div>
-
+    <div dir="rtl" className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+      <div
+        className="fixed inset-0 -z-10 bg-cover bg-center"
+        style={{ backgroundImage: `url(${tplBg})` }}
+        aria-hidden="true"
+      />
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <div className="flex shrink-0 items-center gap-2">
-            <nav className="ml-3 hidden items-center gap-6 text-sm font-bold text-muted-foreground md:flex">
-              <Link to="/quran" className="transition-colors hover:text-sky">القرآن الكريم</Link>
-              {sections.length > 1 && sections.map((s) => (
-                <Link key={s.slug} to="/channels/$section" params={{ section: s.slug }} className="transition-colors hover:text-sky" activeProps={{ className: "text-sky" }}>{s.title}</Link>
-              ))}
-            </nav>
             <button
               type="button"
               onClick={() => {
                 setSearchOpen((value) => !value);
                 setSearchError("");
               }}
-              className="icon-button"
+              className="tpl-top-btn"
               aria-label="بحث"
               title="بحث"
             >
               <Search className="h-5 w-5" />
+              بحث
             </button>
-            <InstallAppButton />
-            <button type="button" className="icon-button hidden sm:grid" aria-label="التنبيهات" title="التنبيهات">
-              <Bell className="h-5 w-5" />
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              className="tpl-top-btn"
+              aria-label="الإعدادات"
+              title="الإعدادات"
+            >
+              <Settings className="h-5 w-5" />
+              الإعدادات
+            </button>
+            <Link to="/chat" className="tpl-top-btn" aria-label="حسابي" title="حسابي">
+              <User className="h-5 w-5" />
+              حسابي
+            </Link>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {section && (
+              <button
+                type="button"
+                onClick={goBack}
+                className="tpl-top-btn"
+                aria-label="رجوع"
+                title="رجوع"
+              >
+                <ArrowRight className="h-5 w-5" />
+                رجوع
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              className="tpl-top-btn"
+              aria-label="القائمة"
+              title="القائمة"
+            >
+              <Menu className="h-6 w-6" />
             </button>
           </div>
         </div>
@@ -253,24 +278,36 @@ export function PortalPage({ section }: { section?: string }) {
         )}
       </header>
 
-      <main className="pb-28 md:pb-12">
-        <section id="player" className="relative border-b border-border/60">
-          <div className="hero-scene" style={{ backgroundImage: `url(${section === "islamic" ? mosqueBg.url : riyadhBg.url})` }} aria-hidden="true" />
-          <div className="relative mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-12 lg:px-8">
-            <div className="mb-4 text-center sm:mb-7">
-              <h1 className="gold-title font-display text-2xl font-black leading-tight sm:text-5xl">{heroTitle}</h1>
-              <p className="mt-2 text-sm font-bold text-foreground/90 sm:text-lg">{heroSub}</p>
-            </div>
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="min-w-0 truncate font-display text-base font-black sm:text-xl">{selected.name}</p>
-              <div className="live-badge shrink-0">
-                <span className="h-2 w-2 rounded-full bg-live-foreground animate-live-pulse" />
-                LIVE
+      <main className="pb-32 md:pb-12">
+        <section id="player" className="relative scroll-mt-20">
+          <div className="relative mx-auto max-w-5xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-8">
+            <h1 className="sr-only">ALMOGHANI IPTV — البث المباشر</h1>
+            <img
+              src={tplLogo}
+              alt="ALMOGHANI IPTV"
+              width={1024}
+              height={768}
+              fetchPriority="high"
+              className="mx-auto h-24 w-auto sm:h-36"
+            />
+            <div className="relative mt-3 sm:mt-5">
+              <img
+                src={tplWolf}
+                alt=""
+                width={768}
+                height={1024}
+                loading="lazy"
+                className="pointer-events-none absolute -bottom-3 -right-3 z-10 w-24 drop-shadow-[0_0_30px_rgba(80,140,255,0.35)] sm:-right-6 sm:w-36 md:-right-14 md:w-48"
+                aria-hidden="true"
+              />
+              <div className="tpl-frame animate-fade-up">
+                <span className="absolute left-3 top-3 z-10 live-badge px-3 py-1 text-[11px] sm:left-4 sm:top-4">
+                  <span className="h-2 w-2 animate-live-pulse rounded-full bg-live-foreground" />
+                  LIVE
+                </span>
+                <LivePlayer key={selected.id} channel={selected} />
               </div>
-            </div>
-            <div className="player-shell animate-fade-up rounded-xl border-sky/60">
-              <LivePlayer key={selected.id} channel={selected} />
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-border bg-surface px-4 py-3 sm:px-5 sm:py-4">
+              <div className="tpl-frame mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-5">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-secondary text-sky">
                     <Signal className="h-5 w-5" />
@@ -286,6 +323,36 @@ export function PortalPage({ section }: { section?: string }) {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-5xl px-4 pt-8 sm:px-6 lg:px-8" aria-label="الأقسام الرئيسية">
+          <div className="grid grid-cols-3 gap-3 sm:gap-5">
+            {mainCards.map((card) => (
+              <Link
+                key={card.title}
+                to={card.to}
+                {...("params" in card ? { params: card.params } : {})}
+                className="tpl-card"
+              >
+                <span className="block aspect-[3/4] overflow-hidden">
+                  <img
+                    src={card.img}
+                    alt={card.title}
+                    width={768}
+                    height={1024}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </span>
+                <span className="grid place-items-center gap-1.5 py-3">
+                  <span className="gold-title font-display text-base font-black sm:text-xl">{card.title}</span>
+                  <span className="grid h-7 w-7 place-items-center rounded-full border border-accent text-accent">
+                    <ChevronLeft className="h-4 w-4" />
+                  </span>
+                </span>
+              </Link>
+            ))}
           </div>
         </section>
 
@@ -450,6 +517,76 @@ export function PortalPage({ section }: { section?: string }) {
         </div>
       </main>
 
+      {menuOpen && (
+        <div className="fixed inset-0 z-[60]" role="dialog" aria-label="القائمة">
+          <button
+            type="button"
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            onClick={() => setMenuOpen(false)}
+            aria-label="إغلاق القائمة"
+          />
+          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] overflow-y-auto border-e border-border bg-surface p-5 shadow-2xl">
+            <div className="mb-5 flex items-center justify-between gap-2">
+              <img src={tplLogo} alt="ALMOGHANI IPTV" width={1024} height={768} className="h-14 w-auto" />
+              <button type="button" onClick={() => setMenuOpen(false)} className="tpl-top-btn" aria-label="إغلاق">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <nav className="grid gap-1 text-sm font-bold" aria-label="قائمة التنقل" onClick={() => setMenuOpen(false)}>
+              <Link to="/" className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary">
+                <Home className="h-4 w-4 text-sky" /> الرئيسية
+              </Link>
+              <Link to="/live" className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary">
+                <Tv className="h-4 w-4 text-sky" /> البث المباشر
+              </Link>
+              <Link to="/movies" className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary">
+                <Film className="h-4 w-4 text-sky" /> الأفلام
+              </Link>
+              <Link to="/quran" className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary">
+                <Sparkles className="h-4 w-4 text-sky" /> القرآن الكريم
+              </Link>
+              <Link to="/chat" className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary">
+                <MessageCircle className="h-4 w-4 text-sky" /> المحادثة
+              </Link>
+              <p className="mt-4 border-t border-border px-3 pt-4 text-xs font-black text-muted-foreground">الأقسام</p>
+              {sections.map((s) => (
+                <Link
+                  key={s.slug}
+                  to="/channels/$section"
+                  params={{ section: s.slug }}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary"
+                >
+                  <s.icon className="h-4 w-4 text-sky" /> {s.title}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {settingsOpen && (
+        <div className="fixed inset-0 z-[60] grid place-items-center p-4" role="dialog" aria-label="الإعدادات">
+          <button
+            type="button"
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            onClick={() => setSettingsOpen(false)}
+            aria-label="إغلاق الإعدادات"
+          />
+          <div className="relative w-full max-w-sm rounded-2xl border border-border bg-surface p-5 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="font-display text-lg font-black">الإعدادات</h2>
+              <button type="button" onClick={() => setSettingsOpen(false)} className="tpl-top-btn" aria-label="إغلاق">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="grid gap-3">
+              <InstallAppButton />
+              <p className="text-xs text-muted-foreground">ثبّت التطبيق على جوالك للوصول السريع.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Link
         to="/chat"
         className="fixed bottom-6 left-4 z-40 hidden items-center gap-2 rounded-full border border-primary/70 bg-gradient-to-l from-primary to-primary/80 px-4 py-3 font-display text-sm font-black text-primary-foreground shadow-live transition-transform hover:-translate-y-0.5 md:flex"
@@ -457,13 +594,13 @@ export function PortalPage({ section }: { section?: string }) {
         <MessageCircle className="h-5 w-5" />ALMOGHANI AI
       </Link>
       <nav className="fixed inset-x-0 bottom-0 z-50 grid h-[calc(5rem+env(safe-area-inset-bottom))] grid-cols-5 items-end border-t border-border bg-background/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-xl md:hidden" aria-label="التنقل السريع">
-        <a href="#player" className="mobile-nav-item text-primary"><Home className="h-5 w-5" /><span>البث</span></a>
-        <a href="#channels" className="mobile-nav-item"><ListVideo className="h-5 w-5" /><span>القنوات</span></a>
-        <a href="#player" className="relative -top-5 mx-auto grid h-14 w-14 place-items-center rounded-full border-4 border-background bg-primary text-primary-foreground shadow-live" aria-label="شغّل البث">
-          <Play className="h-6 w-6 fill-current" />
+        <Link to="/movies" className="mobile-nav-item"><Film className="h-5 w-5" /><span>الأفلام</span></Link>
+        <Link to="/channels/$section" params={{ section: "series" }} className="mobile-nav-item"><Clapperboard className="h-5 w-5" /><span>المسلسلات</span></Link>
+        <a href="#player" className="relative -top-6 mx-auto" aria-label="ALMOGHANI">
+          <img src={tplShield} alt="" width={816} height={816} className="h-16 w-16 drop-shadow-[0_0_18px_rgba(220,180,80,0.5)]" />
         </a>
-        <Link to="/chat" className="mobile-nav-item"><MessageCircle className="h-5 w-5" /><span>المحادثة</span></Link>
-        <Link to="/quran" className="mobile-nav-item"><Sparkles className="h-5 w-5" /><span>القرآن</span></Link>
+        <a href="#player" className="mobile-nav-item"><Tv className="h-5 w-5" /><span>البث</span></a>
+        <Link to="/" className="mobile-nav-item"><Home className="h-5 w-5" /><span>الرئيسية</span></Link>
       </nav>
     </div>
   );
