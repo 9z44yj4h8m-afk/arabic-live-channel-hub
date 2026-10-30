@@ -39,6 +39,7 @@ import tplCardLive from "@/assets/tpl-card-live.jpg";
 import tplCardSeries from "@/assets/tpl-card-series.jpg";
 import tplCardMovies from "@/assets/tpl-card-movies.jpg";
 import { AppBottomNav } from "@/components/app-bottom-nav";
+import { DesignElements, useSiteDesign } from "@/components/site-design-provider";
 import { InstallAppButton } from "@/components/install-app-button";
 import { LivePlayer } from "@/components/live-player";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ const mainCards = [
 ];
 
 export function PortalPage({ section, view = "live" }: { section?: string; view?: "home" | "live" }) {
+  const design = useSiteDesign();
   const { data: channels } = useSuspenseQuery(publicChannelsQuery);
   const isHome = view === "home";
   const visibleSections = isHome ? [] : section ? sections.filter((s) => s.slug === section) : sections.filter((s) => s.slug !== "series" && s.slug !== "movies");
@@ -166,7 +168,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
     <div dir="rtl" className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       <div
         className="fixed inset-0 -z-10 bg-cover bg-center"
-        style={{ backgroundImage: `url(${tplBg})` }}
+        style={{ backgroundImage: `url(${design.images.background || tplBg})` }}
         aria-hidden="true"
       />
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
@@ -288,7 +290,8 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
           <div className="relative mx-auto max-w-5xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-8">
             <h1 className="sr-only">ALMOGHANI IPTV — {isHome ? "الرئيسية" : section ? visibleSections[0]?.title : "البث المباشر"}</h1>
             <img
-              src={tplLogo}
+              data-design="logo"
+              src={design.images.logo || tplLogo}
               alt="ALMOGHANI IPTV"
               width={1024}
               height={768}
@@ -297,7 +300,8 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
             />
             {!isHome && selected && <div className="relative mt-3 sm:mt-5">
               <img
-                src={tplWolf}
+                data-design="wolf"
+                src={design.images.wolf || tplWolf}
                 alt=""
                 width={768}
                 height={1024}
@@ -332,7 +336,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
         </section>
 
         {isHome && <section className="mx-auto max-w-3xl px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8" aria-label="الأقسام الرئيسية">
-          <div className="grid grid-cols-3 gap-3 sm:gap-5">
+          <div data-design="cards" className="grid grid-cols-3 gap-3 sm:gap-5">
             {mainCards.map((card) => (
               <Link
                 key={card.title}
@@ -342,7 +346,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
               >
                 <span className="block aspect-[3/4] overflow-hidden">
                   <img
-                    src={card.img}
+                    src={design.images[card.to === "/movies" ? "movies" : card.to === "/live" ? "live" : "series"] || card.img}
                     alt={card.title}
                     width={768}
                     height={1024}
@@ -351,7 +355,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
                   />
                 </span>
                 <span className="grid min-h-20 place-items-center content-center gap-1.5 px-1 py-3">
-                  <span className="gold-title text-center font-display text-xs font-black leading-5 sm:text-xl">{card.title}</span>
+                  <span className="gold-title text-center font-display text-xs font-black leading-5 sm:text-xl">{design.labels[card.to === "/movies" ? "movies" : card.to === "/live" ? "live" : "series"]}</span>
                   <span className="grid h-7 w-7 place-items-center rounded-full border border-accent text-accent">
                     <ChevronLeft className="h-4 w-4" />
                   </span>
@@ -419,7 +423,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
                       <section.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </span>
                     <div className="min-w-0">
-                      <h2 className="truncate font-display text-lg font-black sm:text-2xl">{section.title}</h2>
+                      <h2 className="truncate font-display text-lg font-black sm:text-2xl">{design.labels[section.slug === "movies" ? "movieChannels" : section.slug as keyof typeof design.labels] || section.title}</h2>
                       <p className="truncate text-xs font-bold text-muted-foreground sm:text-sm">
                         {sectionChannels.length ? `${sectionChannels.length} قناة مباشرة` : "قريبًا"}
                       </p>
@@ -446,7 +450,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
 
                 {sectionChannels.length ? (
                   <>
-                    <div className={`grid grid-cols-2 gap-2.5 sm:gap-3 ${section.cols}`}>
+                    <div data-design="channel-grid" className={`grid grid-cols-2 gap-2.5 sm:gap-3 ${section.cols}`}>
                       {previewChannels.map((channel, i) => (
                       <button
                         key={channel.id}
@@ -598,6 +602,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
       >
         <MessageCircle className="h-5 w-5" />ALMOGHANI AI
       </Link>
+      <DesignElements />
       <AppBottomNav />
     </div>
   );

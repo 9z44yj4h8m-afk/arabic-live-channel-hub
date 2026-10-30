@@ -53,6 +53,27 @@ export type Database = {
         }
         Relationships: []
       }
+      site_design_settings: {
+        Row: {
+          config: Json
+          id: string
+          revision: number
+          updated_at: string
+        }
+        Insert: {
+          config: Json
+          id: string
+          revision?: number
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          id?: string
+          revision?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -85,6 +106,10 @@ export type Database = {
       }
       save_channel_catalog: {
         Args: { entries: Json; expected_revision: number }
+        Returns: number
+      }
+      save_site_design: {
+        Args: { expected_revision: number; payload: Json; publish?: boolean }
         Returns: number
       }
     }

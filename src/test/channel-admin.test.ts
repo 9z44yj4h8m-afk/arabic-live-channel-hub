@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@tanstack/react-start/server", () => ({ useSession: vi.fn(), setResponseHeader: vi.fn() }));
-import { passwordMatches, requireAdminSession } from "@/lib/channel-admin.server";
+import { passwordMatches, passwordVersion, requireAdminSession } from "@/lib/channel-admin.server";
 import { useSession } from "@tanstack/react-start/server";
 
 describe("shared admin password", () => {
@@ -15,5 +15,14 @@ describe("shared admin password", () => {
   it("denies catalog access without an unlocked session", async () => {
     vi.mocked(useSession).mockResolvedValue({ data: {} } as Awaited<ReturnType<typeof useSession>>);
     await expect(requireAdminSession()).rejects.toThrow("أدخل الرقم السري");
+  });
+  it("denies administration when the password version no longer matches", async () => {
+    vi.mocked(useSession).mockResolvedValue({ data: { unlocked: true, passwordVersion: "expired" } } as unknown as Awaited<ReturnType<typeof useSession>>);
+    await expect(requireAdminSession()).rejects.toThrow("أدخل الرقم السري");
+  });
+  it("allows design and channel administration only with the current server session", async () => {
+    const session = { data: { unlocked: true, passwordVersion: passwordVersion() } } as unknown as Awaited<ReturnType<typeof useSession>>;
+    vi.mocked(useSession).mockResolvedValue(session);
+    await expect(requireAdminSession()).resolves.toBe(session);
   });
 });

@@ -7,6 +7,7 @@ import { routeTree } from "@/routeTree.gen";
 import { channels } from "@/lib/channels";
 import { Route as rootRoute } from "@/routes/__root";
 import type { ReactNode } from "react";
+import { defaultDesign } from "@/lib/site-design";
 
 // Document shells belong to the real browser, not a testing-library div.
 Object.assign(rootRoute.options, { shellComponent: ({ children }: { children: ReactNode }) => <>{children}</> });
@@ -14,6 +15,10 @@ Object.assign(rootRoute.options, { shellComponent: ({ children }: { children: Re
 vi.mock("@/lib/channel-catalog.functions", () => ({
   getPublicChannels: vi.fn(async () => channels),
   getAdminCatalog: vi.fn(), saveAdminCatalog: vi.fn(),
+}));
+vi.mock("@/lib/site-design.functions", () => ({
+  getPublishedDesign: vi.fn(async () => defaultDesign()),
+  getDesignDraft: vi.fn(), saveDesignDraft: vi.fn(),
 }));
 
 function renderAt(path: string) {

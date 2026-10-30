@@ -29,6 +29,13 @@
       "when": 1793397496995,
       "tag": "0003_allow_service_role_catalog_save",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793401006122,
+      "tag": "0004_site_design_settings",
+      "breakpoints": true
     }
   ]
 }
