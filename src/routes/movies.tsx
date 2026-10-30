@@ -3,6 +3,8 @@ import { useRef, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, Clock, Play, X } from "lucide-react";
 import { type Movie } from "@/lib/movies";
 import { getFeaturedMovies } from "@/lib/featured-movies.functions";
+import { AppBottomNav } from "@/components/app-bottom-nav";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/movies")({
   loader: () => getFeaturedMovies(),
@@ -58,21 +60,21 @@ function MoviesPage() {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-background pb-28 text-foreground">
-      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+    <div dir="rtl" className="min-h-screen bg-background pb-[calc(6rem+env(safe-area-inset-bottom))] text-foreground">
+      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4">
-          <Link to="/channels/$section" params={{ section: "movies" }} className="icon-button shrink-0" aria-label="رجوع">
+          <Link to="/" className="icon-button shrink-0" aria-label="رجوع إلى الرئيسية">
             <ArrowRight className="h-5 w-5" />
           </Link>
-          <h1 className="text-lg font-black text-primary sm:text-xl">أفلام مميزة كاملة</h1>
-          <span className="ms-auto text-xs text-muted-foreground">{list.length} فيلم</span>
+          <h1 className="min-w-0 text-base font-black text-primary sm:text-xl">الأفلام</h1>
+          <span className="ms-auto shrink-0 text-xs text-muted-foreground">{list.length} فيلم</span>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl pt-4">
-        <div className="flex gap-2 px-4">
+        <div className="flex flex-wrap items-center gap-2 px-4">
           {(["الكل", "عربي", "عالمي"] as const).map((f) => (
-            <button
+            <Button variant="outline"
               key={f}
               type="button"
               onClick={() => {
@@ -83,8 +85,9 @@ function MoviesPage() {
               className={`rounded-full border px-4 py-1.5 text-sm font-bold ${filter === f ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}
             >
               {f}
-            </button>
+            </Button>
           ))}
+          <Button asChild variant="outline" className="ms-auto text-xs"><Link to="/channels/$section" params={{ section: "movies" }}>قنوات الأفلام</Link></Button>
         </div>
 
         {/* One movie per screen: swipe to browse */}
@@ -136,6 +139,7 @@ function MoviesPage() {
           </button>
         </div>
       </main>
+      <AppBottomNav />
 
       {playing && (
         <div className="fixed inset-0 z-[60] flex flex-col bg-background">
