@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as LiveRouteImport } from './routes/live'
+import { Route as ManageChannelsRouteImport } from './routes/manage-channels'
 import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as QuranRouteImport } from './routes/quran'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -31,6 +32,11 @@ const ChatRoute = ChatRouteImport.update({
 const LiveRoute = LiveRouteImport.update({
   id: '/live',
   path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManageChannelsRoute = ManageChannelsRouteImport.update({
+  id: '/manage-channels',
+  path: '/manage-channels',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MoviesRoute = MoviesRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/live': typeof LiveRoute
+  '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
   '/api/chat': typeof ApiChatRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/live': typeof LiveRoute
+  '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
   '/api/chat': typeof ApiChatRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/live': typeof LiveRoute
+  '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
   '/api/chat': typeof ApiChatRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/live'
+    | '/manage-channels'
     | '/movies'
     | '/quran'
     | '/api/chat'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/live'
+    | '/manage-channels'
     | '/movies'
     | '/quran'
     | '/api/chat'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/live'
+    | '/manage-channels'
     | '/movies'
     | '/quran'
     | '/api/chat'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
   LiveRoute: typeof LiveRoute
+  ManageChannelsRoute: typeof ManageChannelsRoute
   MoviesRoute: typeof MoviesRoute
   QuranRoute: typeof QuranRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/live'
       fullPath: '/live'
       preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manage-channels': {
+      id: '/manage-channels'
+      path: '/manage-channels'
+      fullPath: '/manage-channels'
+      preLoaderRoute: typeof ManageChannelsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/movies': {
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
   LiveRoute: LiveRoute,
+  ManageChannelsRoute: ManageChannelsRoute,
   MoviesRoute: MoviesRoute,
   QuranRoute: QuranRoute,
   ApiChatRoute: ApiChatRoute,
