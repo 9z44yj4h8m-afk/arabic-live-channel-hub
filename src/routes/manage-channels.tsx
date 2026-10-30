@@ -44,9 +44,10 @@ function ManagementPage() {
     finally { setSigningIn(false); }
   }
   async function signOut() {
-    await queryClient.cancelQueries(); queryClient.clear();
+    await queryClient.cancelQueries({ queryKey: ["admin-catalog"] });
     await lock();
-    await queryClient.invalidateQueries({ queryKey: ["admin-identity"] });
+    queryClient.setQueryData(["admin-identity"], { unlocked: false });
+    queryClient.removeQueries({ queryKey: ["admin-catalog"] });
   }
   return <div className="min-h-screen bg-background text-foreground" dir="rtl">
     <header className="border-b border-border bg-surface px-4 py-5">
