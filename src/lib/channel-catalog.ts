@@ -3,9 +3,12 @@ import { channels, type Channel } from "./channels";
 
 export const categories = ["إخبارية", "رياضية", "إسلامية", "مسلسلات وأفلام", "أفلام كاملة", "أطفال ووثائقي", "عامة"] as const;
 const httpsUrl = z.string().url().max(2048).refine((value) => {
-  const url = new URL(value);
-  return url.protocol === "https:" && !url.username && !url.password;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
+  } catch { return false; }
 }, "استخدم رابط HTTPS صالحًا");
+const existingRelay = z.string().refine((value) => channels.some((c) => c.streamUrl === value && value.startsWith("/api/public/hls?u=")), "رابط بث غير صالح");
 export const channelSchema = z.object({
   id: z.string().min(1).max(80).regex(/^[a-zA-Z0-9_-]+$/),
   name: z.string().trim().min(1).max(120),
@@ -14,7 +17,7 @@ export const channelSchema = z.object({
   thumbnail: z.union([httpsUrl, z.literal("/icon-192.png")]),
   youtubeId: z.string().regex(/^[a-zA-Z0-9_-]{11}$/).optional(),
   youtubeChannelId: z.string().regex(/^UC[a-zA-Z0-9_-]{22}$/).optional(),
-  streamUrl: httpsUrl.optional(),
+  streamUrl: z.union([httpsUrl, existingRelay]).optional(),
 }).refine((c) => Boolean(c.youtubeId || c.youtubeChannelId || c.streamUrl), "أضف رابط بث أو يوتيوب");
 export type CatalogEntry = { channel: Channel; position: number; deleted: boolean };
 export const saveCatalogSchema = z.object({
@@ -54,10 +57,16 @@ export function channelFromForm(name: string, category: Channel["category"], lin
     if (url.pathname.startsWith("/channel/")) youtubeChannelId = url.pathname.split("/")[2];
     if (!youtubeId && !youtubeChannelId) throw new Error("استخدم رابط فيديو يوتيوب أو رابط القناة الذي يحتوي على /channel/UC");
   }
-  return channelSchema.parse({
+  const parsed = channelSchema.parse({
     id: crypto.randomUUID(), name, category, description,
     thumbnail: thumbnail.trim() || (youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : "/icon-192.png"),
     ...(youtubeId ? { youtubeId } : {}), ...(youtubeChannelId ? { youtubeChannelId } : {}),
     ...(!youtubeId && !youtubeChannelId ? { streamUrl: url.href } : {}),
   });
+  return {
+    id: parsed.id, name: parsed.name, category: parsed.category, description: parsed.description, thumbnail: parsed.thumbnail,
+    ...(parsed.youtubeId ? { youtubeId: parsed.youtubeId } : {}),
+    ...(parsed.youtubeChannelId ? { youtubeChannelId: parsed.youtubeChannelId } : {}),
+    ...(parsed.streamUrl ? { streamUrl: parsed.streamUrl } : {}),
+  };
 }
