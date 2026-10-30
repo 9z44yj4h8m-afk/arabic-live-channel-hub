@@ -17,11 +17,11 @@ describe("shared admin password", () => {
     await expect(requireAdminSession()).rejects.toThrow("أدخل الرقم السري");
   });
   it("denies administration when the password version no longer matches", async () => {
-    vi.mocked(useSession).mockResolvedValue({ data: { unlocked: true, passwordVersion: "expired" } } as Awaited<ReturnType<typeof useSession>>);
+    vi.mocked(useSession).mockResolvedValue({ data: { unlocked: true, passwordVersion: "expired" } } as unknown as Awaited<ReturnType<typeof useSession>>);
     await expect(requireAdminSession()).rejects.toThrow("أدخل الرقم السري");
   });
   it("allows design and channel administration only with the current server session", async () => {
-    const session = { data: { unlocked: true, passwordVersion: passwordVersion() } } as Awaited<ReturnType<typeof useSession>>;
+    const session = { data: { unlocked: true, passwordVersion: passwordVersion() } } as unknown as Awaited<ReturnType<typeof useSession>>;
     vi.mocked(useSession).mockResolvedValue(session);
     await expect(requireAdminSession()).resolves.toBe(session);
   });
