@@ -297,7 +297,7 @@ export function PortalPage({ section }: { section?: string }) {
                 width={768}
                 height={1024}
                 loading="lazy"
-                className="pointer-events-none absolute -bottom-4 -right-6 z-10 hidden w-36 drop-shadow-[0_0_30px_rgba(80,140,255,0.35)] sm:block md:-right-14 md:w-48"
+                className="pointer-events-none absolute -bottom-3 -right-3 z-10 w-24 drop-shadow-[0_0_30px_rgba(80,140,255,0.35)] sm:-right-6 sm:w-36 md:-right-14 md:w-48"
                 aria-hidden="true"
               />
               <div className="tpl-frame animate-fade-up">
