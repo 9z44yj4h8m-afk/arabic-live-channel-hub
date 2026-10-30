@@ -144,7 +144,7 @@ export function PortalPage({ section }: { section?: string }) {
 
   return (
     <div dir="rtl" className="min-h-screen overflow-x-hidden bg-background text-foreground">
-      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
         <div className="mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:h-20 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-1 sm:gap-2">
             {section && (
@@ -455,7 +455,7 @@ export function PortalPage({ section }: { section?: string }) {
       >
         <MessageCircle className="h-5 w-5" />ALMOGHANI AI
       </Link>
-      <nav className="fixed inset-x-0 bottom-0 z-50 grid h-20 grid-cols-5 items-end border-t border-border bg-background/95 px-2 pb-2 backdrop-blur-xl md:hidden" aria-label="التنقل السريع">
+      <nav className="fixed inset-x-0 bottom-0 z-50 grid h-[calc(5rem+env(safe-area-inset-bottom))] grid-cols-5 items-end border-t border-border bg-background/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-xl md:hidden" aria-label="التنقل السريع">
         <a href="#player" className="mobile-nav-item text-primary"><Home className="h-5 w-5" /><span>البث</span></a>
         <a href="#channels" className="mobile-nav-item"><ListVideo className="h-5 w-5" /><span>القنوات</span></a>
         <a href="#player" className="relative -top-5 mx-auto grid h-14 w-14 place-items-center rounded-full border-4 border-background bg-primary text-primary-foreground shadow-live" aria-label="شغّل البث">
