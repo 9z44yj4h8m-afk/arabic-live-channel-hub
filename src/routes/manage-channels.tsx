@@ -53,7 +53,7 @@ function ManagementPage() {
     queryClient.removeQueries({ queryKey: ["admin-catalog"] });
     queryClient.removeQueries({ queryKey: ["design-draft"] });
   }
-  return <div className="min-h-screen bg-background text-foreground" dir="rtl">
+  return <div className="min-h-screen overflow-x-hidden bg-background text-foreground" dir="rtl">
     <header className="border-b border-border bg-surface px-4 py-5">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <div className="flex items-center gap-3"><ShieldCheck className="size-7 text-accent" /><div><p className="text-xs font-bold text-accent" dir="ltr">ALMOGHANI</p><h1 className="text-xl font-bold">إدارة القنوات</h1></div></div>
