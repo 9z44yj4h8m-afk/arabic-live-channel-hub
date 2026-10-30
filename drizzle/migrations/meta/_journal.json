@@ -22,6 +22,13 @@
       "when": 1793397347919,
       "tag": "0002_channel_hidden_visibility",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793397496995,
+      "tag": "0003_allow_service_role_catalog_save",
+      "breakpoints": true
     }
   ]
 }
