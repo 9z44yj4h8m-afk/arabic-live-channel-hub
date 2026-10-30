@@ -17,6 +17,7 @@ import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as QuranRouteImport } from './routes/quran'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ChannelsSectionRouteImport } from './routes/channels.$section'
+import { Route as ApiPublicDesignRouteImport } from './routes/api/public/design'
 import { Route as ApiPublicHlsRouteImport } from './routes/api/public/hls'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +60,11 @@ const ChannelsSectionRoute = ChannelsSectionRouteImport.update({
   path: '/channels/$section',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDesignRoute = ApiPublicDesignRouteImport.update({
+  id: '/api/public/design',
+  path: '/api/public/design',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHlsRoute = ApiPublicHlsRouteImport.update({
   id: '/api/public/hls',
   path: '/api/public/hls',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/quran': typeof QuranRoute
   '/api/chat': typeof ApiChatRoute
   '/channels/$section': typeof ChannelsSectionRoute
+  '/api/public/design': typeof ApiPublicDesignRoute
   '/api/public/hls': typeof ApiPublicHlsRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/quran': typeof QuranRoute
   '/api/chat': typeof ApiChatRoute
   '/channels/$section': typeof ChannelsSectionRoute
+  '/api/public/design': typeof ApiPublicDesignRoute
   '/api/public/hls': typeof ApiPublicHlsRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/quran': typeof QuranRoute
   '/api/chat': typeof ApiChatRoute
   '/channels/$section': typeof ChannelsSectionRoute
+  '/api/public/design': typeof ApiPublicDesignRoute
   '/api/public/hls': typeof ApiPublicHlsRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/quran'
     | '/api/chat'
     | '/channels/$section'
+    | '/api/public/design'
     | '/api/public/hls'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/quran'
     | '/api/chat'
     | '/channels/$section'
+    | '/api/public/design'
     | '/api/public/hls'
   id:
     | '__root__'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/quran'
     | '/api/chat'
     | '/channels/$section'
+    | '/api/public/design'
     | '/api/public/hls'
   fileRoutesById: FileRoutesById
 }
@@ -144,6 +156,7 @@ export interface RootRouteChildren {
   QuranRoute: typeof QuranRoute
   ApiChatRoute: typeof ApiChatRoute
   ChannelsSectionRoute: typeof ChannelsSectionRoute
+  ApiPublicDesignRoute: typeof ApiPublicDesignRoute
   ApiPublicHlsRoute: typeof ApiPublicHlsRoute
 }
 
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChannelsSectionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/design': {
+      id: '/api/public/design'
+      path: '/api/public/design'
+      fullPath: '/api/public/design'
+      preLoaderRoute: typeof ApiPublicDesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hls': {
       id: '/api/public/hls'
       path: '/api/public/hls'
@@ -224,6 +244,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuranRoute: QuranRoute,
   ApiChatRoute: ApiChatRoute,
   ChannelsSectionRoute: ChannelsSectionRoute,
+  ApiPublicDesignRoute: ApiPublicDesignRoute,
   ApiPublicHlsRoute: ApiPublicHlsRoute,
 }
 export const routeTree = rootRouteImport

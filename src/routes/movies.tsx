@@ -5,6 +5,7 @@ import { type Movie } from "@/lib/movies";
 import { getFeaturedMovies } from "@/lib/featured-movies.functions";
 import { AppBottomNav } from "@/components/app-bottom-nav";
 import { Button } from "@/components/ui/button";
+import { DesignElements, useSiteDesign } from "@/components/site-design-provider";
 
 export const Route = createFileRoute("/movies")({
   loader: () => getFeaturedMovies(),
@@ -40,6 +41,7 @@ function Cover({ id, alt, eager }: { id: string; alt: string; eager?: boolean })
 }
 
 function MoviesPage() {
+  const design = useSiteDesign();
   const all = Route.useLoaderData();
   const [filter, setFilter] = useState<"الكل" | Movie["lang"]>("الكل");
   const [playing, setPlaying] = useState<Movie | null>(null);
@@ -66,7 +68,7 @@ function MoviesPage() {
           <Link to="/" className="icon-button shrink-0" aria-label="رجوع إلى الرئيسية">
             <ArrowRight className="h-5 w-5" />
           </Link>
-          <h1 className="min-w-0 text-base font-black text-primary sm:text-xl">الأفلام</h1>
+          <h1 className="min-w-0 text-base font-black text-primary sm:text-xl">{design.labels.movies}</h1>
           <span className="ms-auto shrink-0 text-xs text-muted-foreground">{list.length} فيلم</span>
         </div>
       </header>
@@ -94,7 +96,7 @@ function MoviesPage() {
         <div
           ref={track}
           onScroll={onScroll}
-          className="mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-[7%] pb-2 [scrollbar-width:none]"
+          data-design="movie-list" className="mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-[7%] pb-2 [scrollbar-width:none]"
         >
           {list.map((m, i) => (
             <article key={m.id} className="w-[86%] shrink-0 snap-center sm:w-[60%] lg:w-[40%]">
@@ -139,6 +141,7 @@ function MoviesPage() {
           </button>
         </div>
       </main>
+      <DesignElements />
       <AppBottomNav />
 
       {playing && (
