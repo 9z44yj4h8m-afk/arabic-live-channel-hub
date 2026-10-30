@@ -51,6 +51,7 @@ function ManagementPage() {
     await lock();
     queryClient.setQueryData(["admin-identity"], { unlocked: false });
     queryClient.removeQueries({ queryKey: ["admin-catalog"] });
+    queryClient.removeQueries({ queryKey: ["design-draft"] });
   }
   return <div className="min-h-screen bg-background text-foreground" dir="rtl">
     <header className="border-b border-border bg-surface px-4 py-5">

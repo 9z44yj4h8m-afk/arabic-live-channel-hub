@@ -5,7 +5,7 @@ export type DesignPage = typeof designPages[number];
 export const pageNames: Record<DesignPage, string> = { home: "الرئيسية", live: "البث", movies: "الأفلام", news: "الإخبارية", sports: "الرياضية", islamic: "الإسلامية", series: "المسلسلات", kids: "الأطفال والوثائقي", general: "العامة", movieChannels: "قنوات الأفلام" };
 export const safeImageUrl = z.string().max(2048).refine((value) => {
   if (value === "") return true;
-  try { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password && !["localhost", "127.0.0.1", "0.0.0.0", "[::1]"].includes(url.hostname); } catch { return false; }
+  try { const url = new URL(value); return !/[\s<>"'\\]/.test(value) && url.protocol === "https:" && !url.username && !url.password && !["localhost", "127.0.0.1", "0.0.0.0", "[::1]"].includes(url.hostname); } catch { return false; }
 }, "رابط الصورة يجب أن يبدأ بـ HTTPS دون بيانات دخول");
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const text = z.string().trim().max(120);

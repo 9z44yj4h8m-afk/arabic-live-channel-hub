@@ -8,7 +8,7 @@ import { clampElement, defaultDesign, designPages, pageNames, resolveDesign, saf
 
 const tabs = ["الثيم والألوان", "الخطوط والنصوص", "الصور والشعارات والخلفيات", "التخطيط والمقاسات", "العناصر", "الحركة والمؤثرات"];
 const inputClass = "h-10 w-full min-w-0 rounded-md border border-input bg-background px-2 text-sm";
-const viewports = [{ name: "الجوال", width: 390, height: 844, icon: Smartphone }, { name: "اللوحي", width: 768, height: 1024, icon: Tablet }, { name: "الكمبيوتر", width: 1280, height: 900, icon: Monitor }, { name: "التلفزيون", width: 1920, height: 1080, icon: Tv }];
+const viewports = [{ name: "الجوال", width: 390, height: 844, icon: Smartphone }, { name: "اللوحي", width: 768, height: 1024, icon: Tablet }, { name: "الكمبيوتر", width: 1280, height: 900, icon: Monitor }, { name: "التلفزيون", width: 1920, height: 1080, icon: Tv }] as const;
 const pagePaths: Record<DesignPage, string> = { home: "/", live: "/live", movies: "/movies", news: "/channels/news", sports: "/channels/sports", islamic: "/channels/islamic", series: "/channels/series", kids: "/channels/kids", general: "/channels/general", movieChannels: "/channels/movies" };
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="grid min-w-0 gap-2 text-sm"><span>{label}</span>{children}</label>; }
 function NumberControl({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (value: number) => void }) {
@@ -154,9 +154,9 @@ function Editor({ initial, initialRevision }: { initial: SiteDesign; initialRevi
   </section>;
 }
 
-function ElementCanvas({ elements, height, selected, onSelect, onChange, background }: { elements: DesignElement[]; height: number; selected?: string; onSelect: (id: string) => void; onChange: (element: DesignElement) => void; background: string }) {
+function ElementCanvas({ elements, height, selected, onSelect, onChange, background }: { elements: DesignElement[]; height: number; selected: string | undefined; onSelect: (id: string) => void; onChange: (element: DesignElement) => void; background: string }) {
   const stage = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ element: DesignElement; x: number; y: number; resize: boolean }>();
+  const drag = useRef<{ element: DesignElement; x: number; y: number; resize: boolean } | undefined>(undefined);
   const [temporary, setTemporary] = useState<DesignElement>();
   return <div ref={stage} role="group" aria-label="مساحة تحرير العناصر" className="relative overflow-hidden rounded-md border border-border" style={{ height: Math.min(height, 400), background }} onPointerMove={(event) => {
     const current = drag.current; const bounds = stage.current?.getBoundingClientRect();
