@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { ArrowDown, ArrowUp, Check, Eye, EyeOff, LoaderCircle, LogOut, Plus, RotateCcw, Save, Search, ShieldCheck, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Eye, EyeOff, FileUp, LoaderCircle, LogOut, Plus, RotateCcw, Save, Search, ShieldCheck, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ChannelImporter } from "@/components/channel-importer";
 import { getAdminSession, unlockAdmin, lockAdmin } from "@/lib/channel-admin.functions";
 import { categories, channelFromForm, moveEntry, saveCatalogSchema, type CatalogEntry } from "@/lib/channel-catalog";
 import { getAdminCatalog, saveAdminCatalog } from "@/lib/channel-catalog.functions";
@@ -81,6 +82,7 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
   const [categoryFilter, setCategoryFilter] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [category, setCategory] = useState<ChannelCategory>("إخبارية");
   const save = useServerFn(saveAdminCatalog);
   const client = useQueryClient();
@@ -121,7 +123,8 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
   const allSelectedHidden = selected.size > 0 && entries.filter((e) => !e.deleted && selected.has(e.channel.id)).every((e) => e.hidden);
   const inputClass = "h-11 w-full min-w-0 rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent";
   return <>
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{activeCount} قناة <span className="mx-2">·</span> {dirty ? "تغييرات غير محفوظة" : "القائمة محفوظة"}</p><Button onClick={() => setAdding(true)}><Plus />إضافة قناة</Button></div>
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{activeCount} قناة <span className="mx-2">·</span> {dirty ? "تغييرات غير محفوظة" : "القائمة محفوظة"}</p><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={saving} onClick={() => { setImporting(true); setAdding(false); }}><FileUp />استيراد ملف</Button><Button onClick={() => { setAdding(true); setImporting(false); }}><Plus />إضافة قناة</Button></div></div>
+    {importing && <ChannelImporter entries={entries} onClose={() => setImporting(false)} onImport={(next) => { change(next); setImporting(false); setTab("active"); setFilter(""); setCategoryFilter(""); setSelected(new Set()); setMessage(`تمت إضافة ${next.length - entries.length} قناة؛ اضغط حفظ لاعتمادها.`); }} />}
     {adding && <form onSubmit={add} className="mb-6 border-y border-border py-5">
       <div className="mb-4 flex items-center justify-between"><h2 className="font-bold">قناة جديدة</h2><Button type="button" variant="ghost" size="icon" aria-label="إغلاق الإضافة" title="إغلاق" onClick={() => setAdding(false)}><X /></Button></div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -134,9 +137,9 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
     </form>}
     <div className="mb-4 flex border-b border-border" role="tablist" aria-label="حالة القنوات">{(["active", "deleted"] as const).map((value) => <Button key={value} role="tab" aria-selected={tab === value} variant="ghost" className={`rounded-none border-b-2 ${tab === value ? "border-accent text-accent" : "border-transparent text-muted-foreground"}`} onClick={() => { setTab(value); setSelected(new Set()); }}>{value === "active" ? `القنوات (${activeCount})` : `المحذوفة (${entries.length - activeCount})`}</Button>)}</div>
     <div className="mb-4 grid gap-3 sm:grid-cols-2"><label className="relative"><Search className="absolute right-3 top-3 size-5 text-muted-foreground" /><input aria-label="بحث عن قناة" placeholder="بحث عن قناة" value={filter} onChange={(e) => setFilter(e.target.value)} className={`${inputClass} pr-10`} /></label><select aria-label="تصفية القسم" className={inputClass} value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}><option value="">كل الأقسام</option>{categories.map((c) => <option key={c}>{c}</option>)}</select></div>
-    {tab === "active" && rows.length > 0 && <div className="mb-2 flex items-center justify-between gap-3">
+    {tab === "active" && rows.length > 0 && <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
       <label className="flex cursor-pointer items-center gap-2 text-sm font-bold"><input type="checkbox" className="size-5 accent-accent" checked={rows.every((r) => selected.has(r.channel.id))} onChange={(e) => { const next = new Set(selected); rows.forEach((r) => { if (e.target.checked) next.add(r.channel.id); else next.delete(r.channel.id); }); setSelected(next); }} />تحديد الكل</label>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
       <Button variant="outline" size="sm" disabled={!selected.size} onClick={toggleSelectedVisibility}>{allSelectedHidden ? <Eye /> : <EyeOff />}{selected.size ? `${allSelectedHidden ? "إظهار" : "إخفاء"} المحدد (${selected.size})` : "إظهار/إخفاء المحدد"}</Button>
       <Button variant="outline" size="sm" disabled={!selected.size} onClick={deleteSelected}><Trash2 />{selected.size ? `حذف المحدد (${selected.size})` : "حذف المحدد"}</Button>
       </div>
