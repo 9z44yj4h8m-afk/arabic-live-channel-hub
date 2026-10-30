@@ -19,16 +19,16 @@ export const channelSchema = z.object({
   youtubeChannelId: z.string().regex(/^UC[a-zA-Z0-9_-]{22}$/).optional(),
   streamUrl: z.union([httpsUrl, existingRelay]).optional(),
 }).refine((c) => Boolean(c.youtubeId || c.youtubeChannelId || c.streamUrl), "أضف رابط بث أو يوتيوب");
-export type CatalogEntry = { channel: Channel; position: number; deleted: boolean };
+export type CatalogEntry = { channel: Channel; position: number; deleted: boolean; hidden?: boolean };
 export const saveCatalogSchema = z.object({
   revision: z.number().int().nonnegative(),
-  entries: z.array(z.object({ channel: channelSchema, position: z.number().int().nonnegative(), deleted: z.boolean() })).max(2000),
+  entries: z.array(z.object({ channel: channelSchema, position: z.number().int().nonnegative(), deleted: z.boolean(), hidden: z.boolean().optional() })).max(2000),
 }).refine(({ entries }) => new Set(entries.map((e) => e.channel.id)).size === entries.length, "معرّف قناة مكرر");
 export function seedEntries(): CatalogEntry[] {
   return channels.map((channel, position) => ({ channel, position, deleted: false }));
 }
 export function activeChannels(entries: CatalogEntry[]) {
-  return [...entries].sort((a, b) => a.position - b.position).filter((e) => !e.deleted).map((e) => e.channel);
+  return [...entries].sort((a, b) => a.position - b.position).filter((e) => !e.deleted && !e.hidden).map((e) => e.channel);
 }
 export function moveEntry(entries: CatalogEntry[], id: string, direction: -1 | 1): CatalogEntry[] {
   const result = [...entries].sort((a, b) => a.position - b.position);
