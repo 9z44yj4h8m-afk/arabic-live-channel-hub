@@ -1,10 +1,12 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { PortalPage, liveSections } from "@/components/portal-page";
+import { publicChannelsQuery } from "@/lib/channel-catalog.query";
 
 export const Route = createFileRoute("/channels/$section")({
-  loader: ({ params }) => {
+  loader: async ({ params, context }) => {
     const s = liveSections.find((x) => x.slug === params.section);
     if (!s) throw notFound();
+    await context.queryClient.ensureQueryData(publicChannelsQuery);
     return { title: s.title };
   },
   head: ({ loaderData }) => {
