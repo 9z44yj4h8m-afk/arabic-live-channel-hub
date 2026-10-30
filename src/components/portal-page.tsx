@@ -38,7 +38,7 @@ import tplWolf from "@/assets/tpl-wolf.png";
 import tplCardLive from "@/assets/tpl-card-live.jpg";
 import tplCardSeries from "@/assets/tpl-card-series.jpg";
 import tplCardMovies from "@/assets/tpl-card-movies.jpg";
-import tplShield from "@/assets/tpl-shield.png";
+import { AppBottomNav } from "@/components/app-bottom-nav";
 import { InstallAppButton } from "@/components/install-app-button";
 import { LivePlayer } from "@/components/live-player";
 import { Button } from "@/components/ui/button";
@@ -66,12 +66,13 @@ export const liveSections = sections;
 const mainCards = [
   { title: "الأفلام", img: tplCardMovies, to: "/movies" as const },
   { title: "المسلسلات", img: tplCardSeries, to: "/channels/$section" as const, params: { section: "series" } },
-  { title: "البث", img: tplCardLive, to: "/live" as const },
+  { title: "البث المباشر", img: tplCardLive, to: "/live" as const },
 ];
 
-export function PortalPage({ section }: { section?: string }) {
+export function PortalPage({ section, view = "live" }: { section?: string; view?: "home" | "live" }) {
   const { data: channels } = useSuspenseQuery(publicChannelsQuery);
-  const visibleSections = section ? sections.filter((s) => s.slug === section) : sections;
+  const isHome = view === "home";
+  const visibleSections = isHome ? [] : section ? sections.filter((s) => s.slug === section) : sections.filter((s) => s.slug !== "series" && s.slug !== "movies");
   const [selectedId, setSelectedId] = useState<string | undefined>();
   const selected = channels.find((c) => c.id === selectedId) ?? channels.find((c) => c.category === visibleSections[0]?.category) ?? channels[0];
   const [searchOpen, setSearchOpen] = useState(false);
@@ -148,14 +149,18 @@ export function PortalPage({ section }: { section?: string }) {
   }
 
   function playChannel(channel: Channel) {
+    if (isHome) {
+      setSearchOpen(false);
+      navigate({ to: "/channels/$section", params: { section: sections.find((s) => s.category === channel.category)?.slug ?? "general" }, search: { channel: channel.id } });
+      return;
+    }
     // Scroll first (instant feedback), then swap the stream at lower priority so taps feel immediate.
     document.getElementById("player")?.scrollIntoView({ behavior: "auto", block: "start" });
     setSearchOpen(false);
     startTransition(() => setSelectedId(channel.id));
   }
 
-  if (!selected) return <div className="min-h-screen grid place-items-center text-muted-foreground">لا توجد قنوات متاحة حاليًا</div>;
-  const previewMode = !section;
+  const previewMode = false;
 
   return (
     <div dir="rtl" className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -165,7 +170,7 @@ export function PortalPage({ section }: { section?: string }) {
         aria-hidden="true"
       />
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 lg:px-8">
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
@@ -196,7 +201,7 @@ export function PortalPage({ section }: { section?: string }) {
             </Link>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            {section && (
+            {!isHome && (
               <button
                 type="button"
                 onClick={goBack}
@@ -278,26 +283,26 @@ export function PortalPage({ section }: { section?: string }) {
         )}
       </header>
 
-      <main className="pb-32 md:pb-12">
-        <section id="player" className="relative scroll-mt-20">
+      <main className="pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-12">
+        <section id={isHome ? "home" : "player"} className="relative scroll-mt-20">
           <div className="relative mx-auto max-w-5xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-8">
-            <h1 className="sr-only">ALMOGHANI IPTV — البث المباشر</h1>
+            <h1 className="sr-only">ALMOGHANI IPTV — {isHome ? "الرئيسية" : section ? visibleSections[0]?.title : "البث المباشر"}</h1>
             <img
               src={tplLogo}
               alt="ALMOGHANI IPTV"
               width={1024}
               height={768}
               fetchPriority="high"
-              className="mx-auto h-24 w-auto sm:h-36"
+              className={isHome ? "mx-auto h-40 w-auto max-w-full object-contain sm:h-48" : "mx-auto h-24 w-auto max-w-full object-contain sm:h-36"}
             />
-            <div className="relative mt-3 sm:mt-5">
+            {!isHome && selected && <div className="relative mt-3 sm:mt-5">
               <img
                 src={tplWolf}
                 alt=""
                 width={768}
                 height={1024}
                 loading="lazy"
-                className="pointer-events-none absolute -bottom-3 -right-3 z-10 w-24 drop-shadow-[0_0_30px_rgba(80,140,255,0.35)] sm:-right-6 sm:w-36 md:-right-14 md:w-48"
+                className="pointer-events-none absolute -bottom-3 -right-2 z-10 w-16 sm:-right-6 sm:w-28 md:-right-14 md:w-40"
                 aria-hidden="true"
               />
               <div className="tpl-frame animate-fade-up">
@@ -322,11 +327,11 @@ export function PortalPage({ section }: { section?: string }) {
                   يعمل داخل الموقع
                 </div>
               </div>
-            </div>
+            </div>}
           </div>
         </section>
 
-        <section className="mx-auto max-w-5xl px-4 pt-8 sm:px-6 lg:px-8" aria-label="الأقسام الرئيسية">
+        {isHome && <section className="mx-auto max-w-3xl px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8" aria-label="الأقسام الرئيسية">
           <div className="grid grid-cols-3 gap-3 sm:gap-5">
             {mainCards.map((card) => (
               <Link
@@ -345,8 +350,8 @@ export function PortalPage({ section }: { section?: string }) {
                     className="h-full w-full object-cover"
                   />
                 </span>
-                <span className="grid place-items-center gap-1.5 py-3">
-                  <span className="gold-title font-display text-base font-black sm:text-xl">{card.title}</span>
+                <span className="grid min-h-20 place-items-center content-center gap-1.5 px-1 py-3">
+                  <span className="gold-title text-center font-display text-xs font-black leading-5 sm:text-xl">{card.title}</span>
                   <span className="grid h-7 w-7 place-items-center rounded-full border border-accent text-accent">
                     <ChevronLeft className="h-4 w-4" />
                   </span>
@@ -354,9 +359,9 @@ export function PortalPage({ section }: { section?: string }) {
               </Link>
             ))}
           </div>
-        </section>
+        </section>}
 
-        <div id="channels" className="mx-auto max-w-7xl space-y-10 px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
+        {!isHome && <div id="channels" className="mx-auto max-w-7xl space-y-8 px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
           {inactiveChannels.length > 0 && (
             <details className="rounded-xl border border-border bg-surface">
               <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-black">
@@ -387,12 +392,12 @@ export function PortalPage({ section }: { section?: string }) {
             </details>
           )}
           <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible" aria-label="الأقسام">
-            {sections.map((s, i) => {
+            {visibleSections.map((s) => {
               const count = channels.filter((c) => c.category === s.category).length;
               return (
                 <a
                   key={s.slug}
-                  href={`#section-${i}`}
+                  href={`#section-${s.slug}`}
                   className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-surface px-4 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-sky hover:text-sky"
                 >
                   <s.icon className="h-4 w-4 shrink-0 text-sky" />
@@ -407,7 +412,7 @@ export function PortalPage({ section }: { section?: string }) {
             const previewChannels = previewMode ? sectionChannels.slice(0, 8) : sectionChannels;
             const hiddenCount = sectionChannels.length - previewChannels.length;
             return (
-              <section id={`section-${index}`} key={section.title} className="scroll-mt-28 border-t border-border/60 pt-9 first:border-t-0 first:pt-0 sm:pt-12">
+              <section id={`section-${section.slug}`} key={section.title} className="scroll-mt-28 border-t border-border/60 pt-9 first:border-t-0 first:pt-0 sm:pt-12">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-sky/40 bg-secondary text-sky sm:h-12 sm:w-12">
@@ -453,7 +458,7 @@ export function PortalPage({ section }: { section?: string }) {
                           playChannel(channel);
                         }}
                         style={{ contentVisibility: "auto", containIntrinsicSize: "auto 220px" }}
-                        className={`channel-card ${selected.id === channel.id ? "channel-card-active" : ""}`}
+                        className={`channel-card ${selected?.id === channel.id ? "channel-card-active" : ""}`}
                       >
                         <span className="relative block aspect-video overflow-hidden bg-surface-deep">
                           <span className="absolute inset-0 animate-pulse bg-muted/40" aria-hidden />
@@ -471,7 +476,7 @@ export function PortalPage({ section }: { section?: string }) {
                           <span className="absolute inset-0 bg-player-overlay" />
                           <span className="absolute left-2 top-2 live-badge px-2 py-0.5 text-[9px] sm:left-3 sm:top-3 sm:text-[10px]">
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-live-foreground" />
-                            {selected.id === channel.id ? "يُعرض الآن" : "LIVE"}
+                            {selected?.id === channel.id ? "يُعرض الآن" : "LIVE"}
                           </span>
                           <span className="absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                             <span className="grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-live">
@@ -514,7 +519,7 @@ export function PortalPage({ section }: { section?: string }) {
               </section>
             );
           })}
-        </div>
+        </div>}
       </main>
 
       {menuOpen && (
@@ -593,15 +598,7 @@ export function PortalPage({ section }: { section?: string }) {
       >
         <MessageCircle className="h-5 w-5" />ALMOGHANI AI
       </Link>
-      <nav className="fixed inset-x-0 bottom-0 z-50 grid h-[calc(5rem+env(safe-area-inset-bottom))] grid-cols-5 items-end border-t border-border bg-background/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-xl md:hidden" aria-label="التنقل السريع">
-        <Link to="/movies" className="mobile-nav-item"><Film className="h-5 w-5" /><span>الأفلام</span></Link>
-        <Link to="/channels/$section" params={{ section: "series" }} className="mobile-nav-item"><Clapperboard className="h-5 w-5" /><span>المسلسلات</span></Link>
-        <a href="#player" className="relative -top-6 mx-auto" aria-label="ALMOGHANI">
-          <img src={tplShield} alt="" width={816} height={816} className="h-16 w-16 drop-shadow-[0_0_18px_rgba(220,180,80,0.5)]" />
-        </a>
-        <a href="#player" className="mobile-nav-item"><Tv className="h-5 w-5" /><span>البث</span></a>
-        <Link to="/" className="mobile-nav-item"><Home className="h-5 w-5" /><span>الرئيسية</span></Link>
-      </nav>
+      <AppBottomNav />
     </div>
   );
 }

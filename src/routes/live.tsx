@@ -14,5 +14,5 @@ export const Route = createFileRoute("/live")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: () => <PortalPage />,
+  component: () => <PortalPage view="live" />,
 });

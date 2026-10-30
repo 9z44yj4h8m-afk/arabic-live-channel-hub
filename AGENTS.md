@@ -11,6 +11,8 @@
 
 ## Architecture
 
+- Keep home, live broadcasts and category views explicit in PortalPage, with AppBottomNav shared by channel and movie pages, so the homepage never mounts a player or content lists and each navigation button opens its own section.
+
 - Keep src/lib/channels.ts as the seed; all live views and AI consumers resolve the shared persisted catalog through channel-catalog modules, so administrator changes cannot leave stale static lists. Preserve existing deep links and section slugs.
 - Keep /manage-channels unlinked and noindexed; its public password shell reads and saves only through server functions that verify an encrypted HTTP-only session against the server-secret password version before loading the privileged client, because a hidden URL is not authorization. Retain CSRF protection and atomic catalog saving.
 - Save the entire channel catalog atomically with a revision check and soft deletion, so restoration preserves order and concurrent editors cannot silently overwrite each other.
