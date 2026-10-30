@@ -21,6 +21,12 @@ describe("channel administration", () => {
   it("moves a channel up within its section", () => {
     expect(activeChannels(moveEntry(seedEntries(), "alarabiya", -1))[0]?.id).toBe("alarabiya");
   });
+  it("hidden channels are not shown on the display screen", () => {
+    const entries = seedEntries();
+    const id = entries[0]?.channel.id;
+    expect(activeChannels(entries.map((e, i) => ({ ...e, hidden: i === 0 }))).some((c) => c.id === id)).toBe(false);
+    expect(activeChannels(entries).some((c) => c.id === id)).toBe(true);
+  });
   it("rejects invalid save input and duplicate ids", () => {
     const first = seedEntries()[0];
     expect(saveCatalogSchema.safeParse({ revision: 0, entries: [first, first] }).success).toBe(false);

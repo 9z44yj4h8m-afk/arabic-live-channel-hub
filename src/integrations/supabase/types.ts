@@ -18,18 +18,21 @@ export type Database = {
         Row: {
           channel: Json
           deleted: boolean
+          hidden: boolean
           id: string
           position: number
         }
         Insert: {
           channel: Json
           deleted?: boolean
+          hidden?: boolean
           id: string
           position: number
         }
         Update: {
           channel?: Json
           deleted?: boolean
+          hidden?: boolean
           id?: string
           position?: number
         }

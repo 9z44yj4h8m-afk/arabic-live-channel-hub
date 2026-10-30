@@ -19,6 +19,6 @@ export const saveAdminCatalog = createServerFn({ method: "POST" })
     const { data: revision, error } = await supabaseAdmin.rpc("save_channel_catalog", {
       entries: data.entries as unknown as Json, expected_revision: data.revision,
     });
-    if (error) throw new Error("تعذّر الحفظ. أعد تحميل القائمة إذا حفظتها من جهاز آخر.");
+    if (error) throw new Error(`تعذّر الحفظ: ${error.message}`);
     return { revision };
   });

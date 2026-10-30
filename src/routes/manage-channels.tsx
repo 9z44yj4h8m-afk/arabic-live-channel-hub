@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { ArrowDown, ArrowUp, Check, LoaderCircle, LogOut, Plus, RotateCcw, Save, Search, ShieldCheck, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Eye, EyeOff, LoaderCircle, LogOut, Plus, RotateCcw, Save, Search, ShieldCheck, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getAdminSession, unlockAdmin, lockAdmin } from "@/lib/channel-admin.functions";
 import { categories, channelFromForm, moveEntry, saveCatalogSchema, type CatalogEntry } from "@/lib/channel-catalog";
@@ -79,6 +79,7 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
   const [tab, setTab] = useState<"active" | "deleted">("active");
   const [filter, setFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
   const [category, setCategory] = useState<ChannelCategory>("إخبارية");
   const save = useServerFn(saveAdminCatalog);
@@ -103,6 +104,21 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
       change([...entries, { channel, position: entries.length, deleted: false }]); setAdding(false); setTab("active"); setFilter(""); setCategoryFilter(category);
     } catch (error) { setMessage(error instanceof Error && !error.message.startsWith("[") ? error.message : "تحقق من اسم القناة والرابط."); }
   }
+  function toggleSelected(id: string) {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setSelected(next);
+  }
+  function deleteSelected() {
+    change(entries.map((e) => selected.has(e.channel.id) && !e.deleted ? { ...e, deleted: true } : e));
+    setSelected(new Set());
+  }
+  function toggleSelectedVisibility() {
+    const hide = !entries.filter((e) => !e.deleted && selected.has(e.channel.id)).every((e) => e.hidden);
+    change(entries.map((e) => selected.has(e.channel.id) && !e.deleted ? { ...e, hidden: hide } : e));
+    setSelected(new Set());
+  }
+  const allSelectedHidden = selected.size > 0 && entries.filter((e) => !e.deleted && selected.has(e.channel.id)).every((e) => e.hidden);
   const inputClass = "h-11 w-full min-w-0 rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent";
   return <>
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{activeCount} قناة <span className="mx-2">·</span> {dirty ? "تغييرات غير محفوظة" : "القائمة محفوظة"}</p><Button onClick={() => setAdding(true)}><Plus />إضافة قناة</Button></div>
@@ -116,12 +132,21 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
         <label className="grid gap-2 text-sm">رابط الصورة (اختياري)<input name="thumbnail" type="url" dir="ltr" maxLength={2048} className={inputClass} /></label>
       </div><Button type="submit" className="mt-4"><Plus />إضافة للقائمة</Button>
     </form>}
-    <div className="mb-4 flex border-b border-border" role="tablist" aria-label="حالة القنوات">{(["active", "deleted"] as const).map((value) => <Button key={value} role="tab" aria-selected={tab === value} variant="ghost" className={`rounded-none border-b-2 ${tab === value ? "border-accent text-accent" : "border-transparent text-muted-foreground"}`} onClick={() => setTab(value)}>{value === "active" ? `القنوات (${activeCount})` : `المحذوفة (${entries.length - activeCount})`}</Button>)}</div>
+    <div className="mb-4 flex border-b border-border" role="tablist" aria-label="حالة القنوات">{(["active", "deleted"] as const).map((value) => <Button key={value} role="tab" aria-selected={tab === value} variant="ghost" className={`rounded-none border-b-2 ${tab === value ? "border-accent text-accent" : "border-transparent text-muted-foreground"}`} onClick={() => { setTab(value); setSelected(new Set()); }}>{value === "active" ? `القنوات (${activeCount})` : `المحذوفة (${entries.length - activeCount})`}</Button>)}</div>
     <div className="mb-4 grid gap-3 sm:grid-cols-2"><label className="relative"><Search className="absolute right-3 top-3 size-5 text-muted-foreground" /><input aria-label="بحث عن قناة" placeholder="بحث عن قناة" value={filter} onChange={(e) => setFilter(e.target.value)} className={`${inputClass} pr-10`} /></label><select aria-label="تصفية القسم" className={inputClass} value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}><option value="">كل الأقسام</option>{categories.map((c) => <option key={c}>{c}</option>)}</select></div>
+    {tab === "active" && rows.length > 0 && <div className="mb-2 flex items-center justify-between gap-3">
+      <label className="flex cursor-pointer items-center gap-2 text-sm font-bold"><input type="checkbox" className="size-5 accent-accent" checked={rows.every((r) => selected.has(r.channel.id))} onChange={(e) => { const next = new Set(selected); rows.forEach((r) => { if (e.target.checked) next.add(r.channel.id); else next.delete(r.channel.id); }); setSelected(next); }} />تحديد الكل</label>
+      <div className="flex gap-2">
+      <Button variant="outline" size="sm" disabled={!selected.size} onClick={toggleSelectedVisibility}>{allSelectedHidden ? <Eye /> : <EyeOff />}{selected.size ? `${allSelectedHidden ? "إظهار" : "إخفاء"} المحدد (${selected.size})` : "إظهار/إخفاء المحدد"}</Button>
+      <Button variant="outline" size="sm" disabled={!selected.size} onClick={deleteSelected}><Trash2 />{selected.size ? `حذف المحدد (${selected.size})` : "حذف المحدد"}</Button>
+      </div>
+    </div>}
     <div className="divide-y divide-border">{rows.map((entry) => <div key={entry.channel.id} className="flex items-center gap-3 py-3">
+      {!entry.deleted && <input type="checkbox" className="size-5 shrink-0 accent-accent" aria-label={`تحديد ${entry.channel.name}`} checked={selected.has(entry.channel.id)} onChange={() => toggleSelected(entry.channel.id)} />}
       <img src={entry.channel.thumbnail} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/icon-192.png"; }} className="h-12 w-16 shrink-0 rounded-md bg-surface object-contain" />
-      <div className="min-w-0 flex-1"><p className="break-words text-sm font-bold">{entry.channel.name}</p><p className="mt-1 text-xs text-muted-foreground">{entry.channel.category}</p></div>
+      <div className="min-w-0 flex-1"><p className="break-words text-sm font-bold">{entry.channel.name}{entry.hidden && !entry.deleted && <span className="ms-2 text-xs font-normal text-accent">مخفية عن الشاشة</span>}</p><p className="mt-1 text-xs text-muted-foreground">{entry.channel.category}</p></div>
       <div className="flex shrink-0 gap-1">{entry.deleted ? <Button variant="outline" size="sm" onClick={() => change(entries.map((e) => e.channel.id === entry.channel.id ? { ...e, deleted: false } : e))}><RotateCcw />استرداد</Button> : <>
+        <Button variant="ghost" size="icon" aria-label={`${entry.hidden ? "إظهار" : "إخفاء"} ${entry.channel.name}`} title={entry.hidden ? "إظهار في شاشة العرض" : "إخفاء من شاشة العرض"} onClick={() => change(entries.map((e) => e.channel.id === entry.channel.id ? { ...e, hidden: !e.hidden } : e))}>{entry.hidden ? <EyeOff /> : <Eye />}</Button>
         <Button variant="ghost" size="icon" aria-label={`رفع ${entry.channel.name}`} title="رفع" onClick={() => change(moveEntry(entries, entry.channel.id, -1))}><ArrowUp /></Button>
         <Button variant="ghost" size="icon" aria-label={`خفض ${entry.channel.name}`} title="خفض" onClick={() => change(moveEntry(entries, entry.channel.id, 1))}><ArrowDown /></Button>
         <Button variant="ghost" size="icon" aria-label={`حذف ${entry.channel.name}`} title="حذف" onClick={() => change(entries.map((e) => e.channel.id === entry.channel.id ? { ...e, deleted: true } : e))}><Trash2 /></Button>

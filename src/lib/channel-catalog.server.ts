@@ -21,9 +21,12 @@ export async function readCatalog(client: SupabaseClient<Database>) {
   const { data: state, error: stateError } = await client.from("channel_catalog_state").select("revision").eq("id", 1).maybeSingle();
   if (stateError) throw new Error("تعذّر تحميل القنوات. حاول مجددًا.");
   if (!state?.revision) return { revision: 0, entries: seedEntries() };
-  const { data, error } = await client.from("channel_catalog_entries").select("channel,position,deleted").order("position");
+  const { data, error } = await client.from("channel_catalog_entries").select("channel,position,deleted,hidden").order("position");
   if (error) throw new Error("تعذّر تحميل القنوات. حاول مجددًا.");
-  const entries: CatalogEntry[] = (data ?? []).map((row) => ({ channel: row.channel as unknown as Channel, position: row.position, deleted: row.deleted }));
+  const entries: CatalogEntry[] = (data ?? []).map((row) => {
+    const r = row as { channel: unknown; position: number; deleted: boolean; hidden?: boolean | null };
+    return { channel: r.channel as Channel, position: r.position, deleted: r.deleted, hidden: r.hidden === true };
+  });
   return { revision: state.revision, entries };
 }
 export async function requireAdmin(client: SupabaseClient<Database>, userId: string) {
