@@ -79,6 +79,7 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
   const [tab, setTab] = useState<"active" | "deleted">("active");
   const [filter, setFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
   const [category, setCategory] = useState<ChannelCategory>("إخبارية");
   const save = useServerFn(saveAdminCatalog);
@@ -102,6 +103,15 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
       const channel = channelFromForm(String(form.get("name")), category, String(form.get("link")), String(form.get("description") || ""), String(form.get("thumbnail") || ""));
       change([...entries, { channel, position: entries.length, deleted: false }]); setAdding(false); setTab("active"); setFilter(""); setCategoryFilter(category);
     } catch (error) { setMessage(error instanceof Error && !error.message.startsWith("[") ? error.message : "تحقق من اسم القناة والرابط."); }
+  }
+  function toggleSelected(id: string) {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setSelected(next);
+  }
+  function deleteSelected() {
+    change(entries.map((e) => selected.has(e.channel.id) && !e.deleted ? { ...e, deleted: true } : e));
+    setSelected(new Set());
   }
   const inputClass = "h-11 w-full min-w-0 rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent";
   return <>
