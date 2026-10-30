@@ -4,9 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { ArrowDown, ArrowUp, Check, LoaderCircle, LogOut, Plus, RotateCcw, Save, Search, ShieldCheck, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
-import "@lovable.dev/cloud-auth-js/styles.css";
+import { getAdminSession, unlockAdmin, lockAdmin } from "@/lib/channel-admin.functions";
 import { categories, channelFromForm, moveEntry, saveCatalogSchema, type CatalogEntry } from "@/lib/channel-catalog";
 import { getAdminCatalog, saveAdminCatalog } from "@/lib/channel-catalog.functions";
 import type { ChannelCategory } from "@/lib/channels";
@@ -27,40 +25,47 @@ function ManagementPage() {
   const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
   const [signingIn, setSigningIn] = useState(false);
-  const identity = useQuery({ queryKey: ["admin-identity"], queryFn: async () => (await supabase.auth.getUser()).data.user, retry: false });
+  const [password, setPassword] = useState("");
+  const sessionFn = useServerFn(getAdminSession);
+  const unlock = useServerFn(unlockAdmin);
+  const lock = useServerFn(lockAdmin);
+  const identity = useQuery({ queryKey: ["admin-identity"], queryFn: () => sessionFn(), retry: false });
   const fetchCatalog = useServerFn(getAdminCatalog);
-  const catalog = useQuery({ queryKey: ["admin-catalog", identity.data?.id], queryFn: () => fetchCatalog(), enabled: Boolean(identity.data), retry: false });
-  async function signIn(provider: "google" | "lovable") {
+  const catalog = useQuery({ queryKey: ["admin-catalog"], queryFn: () => fetchCatalog(), enabled: identity.data?.unlocked === true, retry: false });
+  async function signIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setSigningIn(true); setMessage("");
     try {
-      const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: `${window.location.origin}/manage-channels` });
-      if (result.error) throw result.error;
-      if (!result.redirected) await queryClient.invalidateQueries({ queryKey: ["admin-identity"] });
+      const result = await unlock({ data: { password } });
+      setPassword("");
+      if (!result.ok) { setMessage("الرقم السري غير صحيح."); return; }
+      await queryClient.invalidateQueries({ queryKey: ["admin-identity"] });
     } catch { setMessage("تعذّر تسجيل الدخول. حاول مجددًا."); }
     finally { setSigningIn(false); }
   }
   async function signOut() {
-    await queryClient.cancelQueries(); queryClient.clear();
-    await supabase.auth.signOut();
-    await queryClient.invalidateQueries({ queryKey: ["admin-identity"] });
+    await queryClient.cancelQueries({ queryKey: ["admin-catalog"] });
+    await lock();
+    queryClient.setQueryData(["admin-identity"], { unlocked: false });
+    queryClient.removeQueries({ queryKey: ["admin-catalog"] });
   }
   return <div className="min-h-screen bg-background text-foreground" dir="rtl">
     <header className="border-b border-border bg-surface px-4 py-5">
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-3">
         <div className="flex items-center gap-3"><ShieldCheck className="size-7 text-accent" /><div><p className="text-xs font-bold text-accent" dir="ltr">ALMOGHANI</p><h1 className="text-xl font-bold">إدارة القنوات</h1></div></div>
-        {identity.data && <Button variant="ghost" onClick={signOut} title="تسجيل الخروج" aria-label="تسجيل الخروج" size="icon"><LogOut /></Button>}
+        {identity.data?.unlocked && <Button variant="ghost" onClick={signOut} title="تسجيل الخروج" aria-label="تسجيل الخروج" size="icon"><LogOut /></Button>}
       </div>
     </header>
     <main className="mx-auto max-w-4xl px-4 py-6">
-      {identity.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : !identity.data ?
+      {identity.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : !identity.data?.unlocked ?
         <div className="mx-auto max-w-sm py-16 text-center">
           <ShieldCheck className="mx-auto mb-5 size-12 text-accent" /><h2 className="mb-6 text-xl font-bold">دخول الإدارة</h2>
-          <div className="grid gap-3"><Button size="lg" disabled={signingIn} onClick={() => signIn("google")}>الدخول بحساب Google</Button>
-          <Button className="lovable-auth-button" disabled={signingIn} onClick={() => signIn("lovable")}>Sign in with Lovable</Button></div>
+          <form onSubmit={signIn} className="grid gap-3"><label className="grid gap-2 text-right text-sm">الرقم السري<input type="password" inputMode="numeric" autoComplete="current-password" required maxLength={128} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 w-full rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent" /></label><Button type="submit" size="lg" disabled={signingIn || identity.isError}>{signingIn ? <LoaderCircle className="animate-spin" /> : <ShieldCheck />}دخول</Button></form>
+          {identity.isError && <p role="alert" className="mt-4 text-sm text-accent">تعذّر فتح اللوحة. أعد تحميل الصفحة.</p>}
           {message && <p role="alert" className="mt-4 text-sm text-accent">{message}</p>}
         </div> : catalog.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : catalog.error ?
-        <div className="py-12 text-center"><ShieldCheck className="mx-auto mb-4 size-10 text-accent" /><h2 className="text-xl font-bold">الحساب غير مصرح له</h2><p className="mt-3 text-sm text-muted-foreground">يلزم تفعيل صلاحية الإدارة لهذا الحساب.</p><Button className="mt-5" variant="outline" onClick={() => catalog.refetch()}>إعادة المحاولة</Button></div> : catalog.data ?
-        <CatalogEditor initial={catalog.data} key={`${identity.data.id}-${catalog.data.revision}`} /> : null}
+        <div className="py-12 text-center"><ShieldCheck className="mx-auto mb-4 size-10 text-accent" /><h2 className="text-xl font-bold">تعذّر تحميل القنوات</h2><p className="mt-3 text-sm text-muted-foreground">حاول مجددًا أو أعد فتح اللوحة بالرقم السري.</p><Button className="mt-5" variant="outline" onClick={() => catalog.refetch()}>إعادة المحاولة</Button></div> : catalog.data ?
+        <CatalogEditor initial={catalog.data} key={catalog.data.revision} /> : null}
     </main>
   </div>;
 }
