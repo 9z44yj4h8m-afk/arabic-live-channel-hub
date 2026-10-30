@@ -5,6 +5,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { routeTree } from "@/routeTree.gen";
 import { channels } from "@/lib/channels";
+import { Route as rootRoute } from "@/routes/__root";
+
+// Document shells belong to the real browser, not a testing-library div.
+rootRoute.update({ shellComponent: ({ children }) => <>{children}</> });
 
 vi.mock("@/lib/channel-catalog.functions", () => ({
   getPublicChannels: vi.fn(async () => channels),

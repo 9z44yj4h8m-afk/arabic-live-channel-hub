@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { activeChannels, moveEntry, seedEntries, channelFromForm, saveCatalogSchema } from "@/lib/channel-catalog";
 
 describe("channel administration", () => {
+  it("can save every existing channel including the existing HLS relay links", () => {
+    expect(saveCatalogSchema.safeParse({ revision: 0, entries: seedEntries() }).success).toBe(true);
+  });
   it("adds a user-supplied channel", () => {
     const channel = channelFromForm("اختبار", "إخبارية", "https://youtu.be/bNyUyrR0PHo", "", "");
     expect(activeChannels([{ channel, position: 0, deleted: false }])[0]?.youtubeId).toBe("bNyUyrR0PHo");
