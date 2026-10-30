@@ -11,7 +11,9 @@
 
 ## Architecture
 
-- Keep channel metadata in one typed array in src/lib/channels.ts so the player, AI search and AI chat share one catalog; deep links use /live?channel=<id> and /channels/<section-slug> (slugs defined once in the sections array in portal-page).
+- Keep src/lib/channels.ts as the seed; all live views and AI consumers resolve the shared persisted catalog through channel-catalog modules, so administrator changes cannot leave stale static lists. Preserve existing deep links and section slugs.
+- Keep /manage-channels unlinked and noindexed; its public sign-in shell loads private data only through authenticated server functions with database-backed admin-role checks, because a hidden URL is not authorization.
+- Save the entire channel catalog atomically with a revision check and soft deletion, so restoration preserves order and concurrent editors cannot silently overwrite each other.
 - Keep AI channel search server-side and validate returned IDs against the supplied catalog so generated channels can never enter the player.
 - Keep the AI chat streaming through the /api/chat server route with history stored only in the visitor's browser, so no login or database is needed.
 - Resolve each YouTube channel's current live video server-side (resolveYoutubeLive, using youtubeChannelId) and embed by video ID, because YouTube's embed/live_stream?channel= URL shows "video unavailable".

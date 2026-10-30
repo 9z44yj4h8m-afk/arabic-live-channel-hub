@@ -4,6 +4,17 @@ import { cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { routeTree } from "@/routeTree.gen";
+import { channels } from "@/lib/channels";
+import { Route as rootRoute } from "@/routes/__root";
+import type { ReactNode } from "react";
+
+// Document shells belong to the real browser, not a testing-library div.
+Object.assign(rootRoute.options, { shellComponent: ({ children }: { children: ReactNode }) => <>{children}</> });
+
+vi.mock("@/lib/channel-catalog.functions", () => ({
+  getPublicChannels: vi.fn(async () => channels),
+  getAdminCatalog: vi.fn(), saveAdminCatalog: vi.fn(),
+}));
 
 function renderAt(path: string) {
   const queryClient = new QueryClient();
@@ -11,6 +22,8 @@ function renderAt(path: string) {
     routeTree,
     context: { queryClient },
     history: createMemoryHistory({ initialEntries: [path] }),
+    defaultPendingMinMs: 0,
+    defaultPendingMs: 0,
   });
   return render(<RouterProvider router={router} />);
 }

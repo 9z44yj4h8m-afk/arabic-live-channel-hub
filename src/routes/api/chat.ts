@@ -3,15 +3,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 
 import { createLovableAiGatewayRunIdFetch } from "@/lib/ai/run-id.server";
-import { channels } from "@/lib/channels";
-
-const CATALOG = channels.map((c) => `- ${c.name}  |  القسم: ${c.category}  |  الرابط: /live?channel=${c.id}`).join("\n");
+import { publicCatalogClient, readCatalog } from "@/lib/channel-catalog.server";
+import { activeChannels } from "@/lib/channel-catalog";
 
 const SYSTEM = `أنت "ALMOGHANI AI"، مساعد ذكي ودود داخل موقع almoghani.net.
 تحدث بالعربية الفصحى المبسطة (أو بلغة المستخدم إن كتب بغيرها)، وأجب بإيجاز ووضوح مع تنسيق Markdown عند الحاجة.
 
 ## القنوات المتاحة في الموقع (هذه فقط، لا تذكر قناة غيرها كأنها في الموقع):
-${CATALOG}
+__CHANNEL_CATALOG__
 عند اقتراح قناة اكتبها رابطًا بصيغة Markdown بالضبط هكذا: [اسم القناة](/live?channel=المعرّف). لا تخترع روابط أو قنوات.
 
 ## صفحة القرآن الكريم
@@ -47,9 +46,10 @@ export const Route = createFileRoute("/api/chat")({
           fetch: runIdFetch.fetch,
         });
 
+        const catalog = activeChannels((await readCatalog(publicCatalogClient())).entries).map((c) => `- ${c.name} | القسم: ${c.category} | الرابط: /live?channel=${c.id}`).join("\n");
         const result = streamText({
           model: provider.responses("openai/gpt-6-astra"),
-          system: SYSTEM,
+          system: SYSTEM.replace("__CHANNEL_CATALOG__", catalog),
           messages: await convertToModelMessages(messages),
           abortSignal: request.signal,
           providerOptions: {

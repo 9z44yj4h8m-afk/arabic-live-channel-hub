@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { publicChannelsQuery } from "@/lib/channel-catalog.query";
 import {
   ArrowRight,
   Baby,
@@ -33,7 +35,7 @@ import { InstallAppButton } from "@/components/install-app-button";
 import { LivePlayer } from "@/components/live-player";
 import { Button } from "@/components/ui/button";
 import { searchChannelsWithAi } from "@/lib/channel-search.functions";
-import { channels, type Channel, type ChannelCategory } from "@/lib/channels";
+import { type Channel, type ChannelCategory } from "@/lib/channels";
 
 const sections: {
   slug: string;
@@ -54,10 +56,10 @@ const sections: {
 export const liveSections = sections;
 
 export function PortalPage({ section }: { section?: string }) {
+  const { data: channels } = useSuspenseQuery(publicChannelsQuery);
   const visibleSections = section ? sections.filter((s) => s.slug === section) : sections;
-  const [selected, setSelected] = useState(
-    channels.find((c) => c.category === visibleSections[0]?.category) ?? channels[0],
-  );
+  const [selectedId, setSelectedId] = useState<string | undefined>();
+  const selected = channels.find((c) => c.id === selectedId) ?? channels.find((c) => c.category === visibleSections[0]?.category) ?? channels[0];
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResultIds, setSearchResultIds] = useState<string[] | null>(null);
@@ -66,8 +68,8 @@ export function PortalPage({ section }: { section?: string }) {
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("channel");
     const found = id && channels.find((c) => c.id === id);
-    if (found) { setSelected(found); document.getElementById("player")?.scrollIntoView({ behavior: "smooth" }); }
-  }, []);
+    if (found) { setSelectedId(found.id); document.getElementById("player")?.scrollIntoView({ behavior: "smooth" }); }
+  }, [channels]);
   const searchWithAi = useServerFn(searchChannelsWithAi);
   const navigate = useNavigate();
   function goBack() {
@@ -96,7 +98,6 @@ export function PortalPage({ section }: { section?: string }) {
       const result = await searchWithAi({
         data: {
           query,
-          channels: channels.map(({ id, name, category, description }) => ({ id, name, category, description })),
         },
       });
       setSearchResultIds(result.ids);
@@ -134,10 +135,10 @@ export function PortalPage({ section }: { section?: string }) {
     // Scroll first (instant feedback), then swap the stream at lower priority so taps feel immediate.
     document.getElementById("player")?.scrollIntoView({ behavior: "auto", block: "start" });
     setSearchOpen(false);
-    startTransition(() => setSelected(channel));
+    startTransition(() => setSelectedId(channel.id));
   }
 
-  if (!selected) return null;
+  if (!selected) return <div className="min-h-screen grid place-items-center text-muted-foreground">لا توجد قنوات متاحة حاليًا</div>;
   const previewMode = !section;
   const heroTitle = section === "live" || !section ? "القنوات المباشرة" : `قنوات ${visibleSections[0]?.title ?? ""} مباشرة`;
   const heroSub = section === "islamic" ? "تلاوات وبرامج إيمانية على مدار الساعة" : "تابع القنوات المباشرة من مكان واحد";

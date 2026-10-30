@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PortalPage } from "@/components/portal-page";
+import { publicChannelsQuery } from "@/lib/channel-catalog.query";
 
 export const Route = createFileRoute("/live")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(publicChannelsQuery),
   head: () => ({
     meta: [
       { title: "البث المباشر — ALMOGHANI LIVE" },
