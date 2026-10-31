@@ -109,7 +109,7 @@ export function IptvBrowser<T extends BrowserItem>({
         </nav>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-2 p-2 landscape:grid-cols-[minmax(150px,24%)_minmax(0,1fr)_minmax(0,40%)] portrait:grid-cols-1 md:grid-cols-[minmax(170px,22%)_minmax(0,1fr)_minmax(0,42%)]">
+      <div className="grid min-h-0 flex-1 gap-2 p-2 landscape:grid-cols-[minmax(120px,17%)_minmax(0,1fr)_minmax(0,50%)] portrait:grid-cols-1 md:grid-cols-[minmax(140px,18%)_minmax(0,1fr)_minmax(0,50%)]">
         {/* Player column (last in landscape = leftmost in RTL, first on portrait) */}
         <section className="iptv-panel flex min-h-0 flex-col gap-2 p-2 portrait:order-first landscape:order-3 md:order-3" aria-label="المشغل">
           <div className="overflow-hidden rounded-lg bg-surface-deep">{selected ? renderPlayer(selected) : null}</div>
@@ -132,7 +132,7 @@ export function IptvBrowser<T extends BrowserItem>({
 
         {/* Categories */}
         <aside className="iptv-panel flex min-h-0 flex-col gap-1.5 p-2 landscape:order-1 md:order-1" aria-label="التصنيفات">
-          <input value={catQuery} onChange={(e) => setCatQuery(e.target.value)} placeholder="بحث في التصنيفات" aria-label="بحث في التصنيفات" className="iptv-row w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground" />
+          <input value={catQuery} onChange={(e) => setCatQuery(e.target.value)} placeholder="بحث في التصنيفات" aria-label="بحث في التصنيفات" className="iptv-cat-search bg-transparent outline-none placeholder:text-muted-foreground" />
           <div className="flex min-h-0 gap-1.5 overflow-auto portrait:flex-row landscape:flex-col md:flex-col [scrollbar-width:thin]">
             {shownCats.map((c) => (
               <button key={c.key} type="button" onClick={() => setGroup(c.key)} className={`iptv-row shrink-0 justify-between text-xs ${group === c.key ? "iptv-row-active" : ""}`}>
