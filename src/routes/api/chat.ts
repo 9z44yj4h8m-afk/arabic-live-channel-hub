@@ -20,7 +20,7 @@ __CHANNEL_CATALOG__
 
 عند الأسئلة الشرعية كن دقيقًا ومحترمًا، ولا تنسب حديثًا أو قولًا لا تتأكد من صحته، وانصح بالرجوع لأهل العلم في الفتاوى.`;
 
-export const Route = createFileRoute("/api/chat")({
+export const Route = createFileRoute("/api/chat")({ staticData: { sitemap: false },
   server: {
     handlers: {
       POST: async ({ request }) => {

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PortalPage } from "@/components/portal-page";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/")({ staticData: { sitemap: true },
   head: () => ({
     links: [{ rel: "canonical", href: "https://arabic-live-channel-hub.lovable.app/" }],
     meta: [

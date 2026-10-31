@@ -5,7 +5,7 @@ import { LockKeyhole, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { unlockSite } from "@/lib/site-gate.functions";
 
-export const Route = createFileRoute("/unlock")({
+export const Route = createFileRoute("/unlock")({ staticData: { sitemap: false },
   head: () => ({ meta: [{ title: "فتح التطبيق — ALMOGHANI IPTV" }, { name: "description", content: "دخول تطبيق المغني بالرقم السري." }, { property: "og:title", content: "فتح التطبيق — ALMOGHANI IPTV" }, { property: "og:description", content: "دخول تطبيق المغني بالرقم السري." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: UnlockPage,
 });

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-export const Route = createFileRoute("/api/public/xtream")({ server: { handlers: { GET: async ({ request }) => {
+export const Route = createFileRoute("/api/public/xtream")({ staticData: { sitemap: false }, server: { handlers: { GET: async ({ request }) => {
   try {
     const { requireSiteSession } = await import("@/lib/site-gate.server"); await requireSiteSession();
     const { connection, encrypt, decrypt } = await import("@/lib/xtream.server");

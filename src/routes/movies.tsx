@@ -4,7 +4,7 @@ import { getFeaturedMovies } from "@/lib/featured-movies.functions";
 import { IptvBrowser } from "@/components/iptv-browser";
 import { DesignElements, useSiteDesign } from "@/components/site-design-provider";
 
-export const Route = createFileRoute("/movies")({
+export const Route = createFileRoute("/movies")({ staticData: { sitemap: false },
   loader: () => getFeaturedMovies(),
   head: () => ({
     meta: [

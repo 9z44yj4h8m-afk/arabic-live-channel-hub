@@ -81,6 +81,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  staticData: { sitemap: false },
   beforeLoad: async ({ location }) => {
     if (location.pathname === "/" || location.pathname === "/unlock" || location.pathname === "/manage-channels" || location.pathname === "/sitemap.xml" || location.pathname.startsWith("/api/")) return;
     if (!(await getSiteAccess()).unlocked) throw redirect({ to: "/unlock" });

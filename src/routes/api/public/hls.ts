@@ -16,7 +16,7 @@ function proxied(url: string) {
   return `/api/public/hls?u=${encodeURIComponent(url)}`;
 }
 
-export const Route = createFileRoute("/api/public/hls")({
+export const Route = createFileRoute("/api/public/hls")({ staticData: { sitemap: false },
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
