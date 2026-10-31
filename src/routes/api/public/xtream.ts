@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/xtream")({ staticData: { sitemap: false }, server: { handlers: { GET: async ({ request }) => {
   try {
-    const { requireSiteSession } = await import("@/lib/site-gate.server"); await requireSiteSession();
     const { connection, encrypt, decrypt } = await import("@/lib/xtream.server");
     const { credentials, db } = await connection(); const params = new URL(request.url).searchParams;
     let url: URL;

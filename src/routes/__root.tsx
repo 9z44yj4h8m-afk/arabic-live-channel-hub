@@ -6,7 +6,6 @@ import {
   useRouter,
   HeadContent,
   Scripts,
-  redirect,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
@@ -18,7 +17,6 @@ import { SiteDesignProvider } from "@/components/site-design-provider";
 import { publishedDesignQuery } from "@/lib/site-design.query";
 import { catalogSectionsQuery } from "@/lib/catalog-sections.query";
 import { categoryLabelsQuery } from "@/lib/category-labels.query";
-import { getSiteAccess } from "@/lib/site-gate.functions";
 
 function NotFoundComponent() {
   return (
@@ -82,10 +80,6 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   staticData: { sitemap: false },
-  beforeLoad: async ({ location }) => {
-    if (location.pathname === "/" || location.pathname === "/unlock" || location.pathname === "/manage-channels" || location.pathname === "/sitemap.xml" || location.pathname.startsWith("/api/")) return;
-    if (!(await getSiteAccess()).unlocked) throw redirect({ to: "/unlock" });
-  },
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(publishedDesignQuery), context.queryClient.ensureQueryData(categoryLabelsQuery), context.queryClient.ensureQueryData(catalogSectionsQuery)]),
   head: () => ({
     meta: [
