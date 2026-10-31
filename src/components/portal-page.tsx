@@ -377,7 +377,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
 
         {isHome && <section className="mx-auto max-w-3xl px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8" aria-label="الأقسام الرئيسية">
           <div data-design="cards" className="grid grid-cols-3 gap-3 sm:gap-5">
-            {mainCards.filter((card) => !("params" in card) || sections.some((s) => s.slug === card.params.section)).map((card) => (
+            {mainCards.filter((card) => !("params" in card) || sections.some((s) => s.slug === card.params?.section)).map((card) => (
               <Link
                 key={card.title}
                 to={card.to}
