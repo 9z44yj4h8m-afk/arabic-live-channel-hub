@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import type { Channel } from "@/lib/channels";
 import { markActive, markInactive, notifyStream } from "@/lib/inactive-channels";
 import { resolveYoutubeLive } from "@/lib/youtube-live.functions";
+import { Button } from "@/components/ui/button";
 
 type Settings = { volume: number; muted: boolean; quality: number; autoReconnect: boolean; notify: boolean };
 type Status = "loading" | "playing" | "reconnecting" | "failed";
@@ -62,6 +63,8 @@ export function LivePlayer({ channel }: { channel: Channel }) {
   const [attempt, setAttempt] = useState(0);
   const [reloadKey, setReloadKey] = useState(0);
   const [levels, setLevels] = useState<{ index: number; height: number }[]>([]);
+  const [relayReady, setRelayReady] = useState("");
+  const [relayError, setRelayError] = useState("");
   const isHls = Boolean(channel.streamUrl);
   const [ytId, setYtId] = useState(channel.youtubeId);
   const resolveLive = useServerFn(resolveYoutubeLive);
@@ -144,8 +147,31 @@ export function LivePlayer({ channel }: { channel: Channel }) {
 
   // HLS playback: native on Safari/iOS, hls.js elsewhere.
   useEffect(() => {
+    const stream = channel.streamUrl;
+    if (!stream?.startsWith("/api/public/xtream?")) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 25000);
+    let cancelled = false;
+    setRelayReady("");
+    setRelayError("");
+    void fetch(`${stream}&probe=1`, { signal: controller.signal, cache: "no-store" })
+      .then(async response => {
+        if (cancelled) return;
+        if (response.ok) { setRelayReady(stream); return; }
+        setRelayError(response.status === 403 ? "مزوّد الاشتراك رفض تشغيل البث من الموقع." : "البث غير متاح حاليًا؛ حاول لاحقًا.");
+        setStatus("failed");
+      })
+      .catch(() => {
+        if (!cancelled) { setRelayError("تعذّر الاتصال بالبث حاليًا."); setStatus("failed"); }
+      })
+      .finally(() => window.clearTimeout(timer));
+    return () => { cancelled = true; controller.abort(); window.clearTimeout(timer); };
+  }, [channel.streamUrl, reloadKey]);
+
+  useEffect(() => {
     if (!channel.streamUrl) return;
     const streamUrl = channel.streamUrl;
+    if (streamUrl.startsWith("/api/public/xtream?") && relayReady !== streamUrl) return;
     const directVideo = streamUrl.includes("format=video");
     const video = videoRef.current;
     if (!video) return;
@@ -233,7 +259,7 @@ export function LivePlayer({ channel }: { channel: Channel }) {
       video.load();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channel.streamUrl, reloadKey]);
+  }, [channel.streamUrl, reloadKey, relayReady]);
 
   // YouTube: follow player events (ready, playing, ended, error).
   const ytCommand = useCallback((func: string, args: unknown[] = []) => {
@@ -374,18 +400,18 @@ export function LivePlayer({ channel }: { channel: Channel }) {
           <div className="absolute inset-0 grid place-items-center bg-surface-deep/95 p-6 text-center">
             <div>
               <WifiOff className="mx-auto h-8 w-8 text-muted-foreground" />
-              <p className="mt-3 font-display text-lg font-black">هذه القناة متوقفة حاليًا</p>
+              <p className="mt-3 font-display text-lg font-black">{relayError || "هذه القناة متوقفة حاليًا"}</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                قد يكون البث انتهى أو غير متاح في منطقتك.
+                {relayError ? "يمكنك اختيار قناة أخرى أو إعادة المحاولة." : "قد يكون البث انتهى أو غير متاح في منطقتك."}
               </p>
-              <button
+              <Button
                 type="button"
                 onClick={manualReload}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+                className="mt-4"
               >
                 <RefreshCw className="h-4 w-4" />
                 حاول مرة أخرى
-              </button>
+              </Button>
             </div>
           </div>
         )}

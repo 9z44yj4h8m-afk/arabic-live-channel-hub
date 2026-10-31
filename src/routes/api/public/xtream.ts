@@ -20,7 +20,15 @@ export const Route = createFileRoute("/api/public/xtream")({ staticData: { sitem
     if (url.origin !== credentials.server || url.username || url.password) return new Response(null, { status: 403 });
     const headers = new Headers(); const range = request.headers.get("range"); if (range) headers.set("range", range);
     const upstream = await fetch(url, { headers, redirect: "error", signal: AbortSignal.timeout(20000) });
-    if (!upstream.ok) return new Response(null, { status: 502 });
+    if (!upstream.ok) {
+      const { playbackFailure } = await import("@/lib/xtream-playback");
+      const failure = playbackFailure(upstream.status);
+      return Response.json({ message: failure.message }, { status: failure.status, headers: { "Cache-Control": "no-store" } });
+    }
+    if (params.get("probe") === "1") {
+      await upstream.body?.cancel();
+      return Response.json({ available: true }, { headers: { "Cache-Control": "no-store" } });
+    }
     const type = upstream.headers.get("content-type") ?? "application/octet-stream";
     const output = new Headers({ "Cache-Control": "private, no-store", "Content-Type": type });
     if (/mpegurl/i.test(type) || url.pathname.endsWith(".m3u8")) {
