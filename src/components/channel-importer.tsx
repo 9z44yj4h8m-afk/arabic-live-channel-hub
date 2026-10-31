@@ -48,7 +48,7 @@ export function ChannelImporter({ entries, onImport, onClose, categories = [...d
     if (!selected) return;
     setError(""); setFile(undefined); setLoading(true); setExcluded(new Set()); setPage(0);
     try {
-      if (selected.size > 5 * 1024 * 1024) throw new Error("اختر ملفًا بحجم لا يتجاوز 5 ميجابايت.");
+      if (selected.size > 50 * 1024 * 1024) throw new Error("اختر ملفًا بحجم لا يتجاوز 50 ميجابايت.");
       const parsed = parseImportFile(await selected.text());
       setFilename(selected.name); setFile(parsed);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "تعذّر قراءة الملف."); }
