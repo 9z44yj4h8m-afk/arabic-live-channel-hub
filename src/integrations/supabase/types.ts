@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      category_labels: {
+        Row: {
+          key: string
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          label?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       channel_catalog_entries: {
         Row: {
           channel: Json

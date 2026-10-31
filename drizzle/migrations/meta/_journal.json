@@ -43,6 +43,13 @@
       "when": 1793406311690,
       "tag": "0005_secure_xtream_library",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793411141630,
+      "tag": "0006_category_labels",
+      "breakpoints": true
     }
   ]
 }
