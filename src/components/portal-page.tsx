@@ -596,7 +596,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
                   params={{ section: s.slug }}
                   className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary"
                 >
-                  <s.icon className="h-4 w-4 text-sky" /> {s.title}
+                  <s.icon className="h-4 w-4 text-sky" /> {design.labels[s.slug === "movies" ? "movieChannels" : s.slug as keyof typeof design.labels] || s.title}
                 </Link>
               ))}
             </nav>

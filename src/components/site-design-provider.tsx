@@ -2,12 +2,14 @@ import { createContext, useContext, useEffect, useState, type CSSProperties, typ
 import { useLocation } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { publishedDesignQuery } from "@/lib/site-design.query";
+import { categoryLabelsQuery } from "@/lib/category-labels.query";
 import { defaultDesign, resolveDesign, siteDesignSchema, type DesignPage, type DesignSettings } from "@/lib/site-design";
 
 const DesignContext = createContext<DesignSettings>(defaultDesign().global);
 export function useSiteDesign() { return useContext(DesignContext); }
 export function SiteDesignProvider({ children }: { children: ReactNode }) {
   const { data: published } = useSuspenseQuery(publishedDesignQuery);
+  const { data: categoryLabels } = useSuspenseQuery(categoryLabelsQuery);
   const [preview, setPreview] = useState<typeof published>();
   const pathname = useLocation({ select: (location) => location.pathname });
   const page: DesignPage = pathname === "/" ? "home" : pathname === "/movies" ? "movies" : pathname === "/live" ? "live" : pathname === "/channels/movies" ? "movieChannels" : (pathname.split("/")[2] as DesignPage) || "home";
@@ -22,7 +24,8 @@ export function SiteDesignProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("message", receive);
   }, []);
   const design = preview || published;
-  const settings = resolveDesign(design, page in design.pages ? page : "home");
+  const resolved = resolveDesign(design, page in design.pages ? page : "home");
+  const settings = { ...resolved, labels: { ...resolved.labels, ...categoryLabels } };
   const c = settings.colors;
   const font = { original: '"Manrope", "Noto Sans Arabic", sans-serif', arabic: '"Noto Sans Arabic", sans-serif', serif: '"Amiri Quran", serif', system: 'Arial, sans-serif' }[settings.typography.font];
   const style = design.customized && supported ? {

@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteDesignProvider } from "@/components/site-design-provider";
 import { publishedDesignQuery } from "@/lib/site-design.query";
+import { categoryLabelsQuery } from "@/lib/category-labels.query";
 
 function NotFoundComponent() {
   return (
@@ -77,7 +78,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  loader: ({ context }) => context.queryClient.ensureQueryData(publishedDesignQuery),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(publishedDesignQuery), context.queryClient.ensureQueryData(categoryLabelsQuery)]),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
