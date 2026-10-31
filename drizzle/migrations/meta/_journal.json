@@ -57,6 +57,13 @@
       "when": 1793412858871,
       "tag": "0007_catalog_sections_management",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793414225280,
+      "tag": "0008_xtream_playback_metadata",
+      "breakpoints": true
     }
   ]
 }
