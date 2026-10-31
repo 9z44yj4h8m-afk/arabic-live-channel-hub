@@ -11,6 +11,11 @@ describe("subscription rules", () => {
     ]);
   });
   it("retains seasons and episodes", () => expect(normalizeRows([{ id: "5", title: "حلقة", season: 2, episode_num: 3 }], {}, "episode")[0]).toMatchObject({ remote_id: "5", season: 2, episode: 3 }));
+  it("preserves provider FLV and M4V movie extensions", () => {
+    const rows = normalizeRows([{ stream_id: 1, name: "Movie A", container_extension: "flv" }, { stream_id: 2, name: "Movie B", container_extension: "m4v" }], {}, "movie");
+    expect(rows.map(row => row.extension)).toEqual(["flv", "m4v"]);
+    expect(() => normalizeRows([{ stream_id: 3, name: "Invalid", container_extension: "../mp4" }], {}, "movie")).toThrow();
+  });
   it("rejects private credential destinations", () => {
     for (const server of ["https://127.0.0.1", "http://10.1.1.1:8080", "ftp://provider.example", "https://provider.example/?password=x"]) expect(() => credentialsSchema.parse({ server, username: "fixture", password: "fixture" })).toThrow();
   });

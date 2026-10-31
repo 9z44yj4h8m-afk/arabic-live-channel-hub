@@ -16,7 +16,7 @@ export function normalizeRows(input: unknown, categories: Record<string, string>
     if (!/^\d+$/.test(remote_id) || ids.has(remote_id)) throw new Error("قائمة الاشتراك تتضمن معرفات غير صالحة أو مكررة");
     ids.add(remote_id);
     const ext = String(r['container_extension'] ?? "mp4");
-    if (!/^(mp4|mkv|avi|ts|m3u8|mov|webm)$/.test(ext)) throw new Error("صيغة بث غير مدعومة");
+    if (!/^(mp4|mkv|avi|ts|m3u8|mov|webm|flv|m4v)$/.test(ext)) throw new Error("صيغة بث غير مدعومة");
     return { remote_id, name: z.string().min(1).max(500).parse(r['name'] ?? r['title']), category: categories[String(r['category_id'])] ?? "عام", position, season: Number(r['season'] ?? 0), episode: Number(r['episode_num'] ?? 0), extension: kind === "live" ? "m3u8" : ext };
   });
 }
