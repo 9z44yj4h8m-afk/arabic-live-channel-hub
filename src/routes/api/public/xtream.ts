@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { playbackFailureResponse } from "@/lib/xtream-playback";
 export const Route = createFileRoute("/api/public/xtream")({ staticData: { sitemap: false }, server: { handlers: { GET: async ({ request }) => {
   try {
     const { connection, encrypt, decrypt } = await import("@/lib/xtream.server");
@@ -19,11 +20,15 @@ export const Route = createFileRoute("/api/public/xtream")({ staticData: { sitem
     }
     if (url.origin !== credentials.server || url.username || url.password) return new Response(null, { status: 403 });
     const headers = new Headers(); const range = request.headers.get("range"); if (range) headers.set("range", range);
-    const upstream = await fetch(url, { headers, redirect: "error", signal: AbortSignal.timeout(20000) });
+    let upstream: Response;
+    try {
+      upstream = await fetch(url, { headers, redirect: "error", signal: AbortSignal.timeout(20000) });
+    } catch {
+      // A provider timeout, rejected redirect or network failure is not an auth failure.
+      return playbackFailureResponse();
+    }
     if (!upstream.ok) {
-      const { playbackFailure } = await import("@/lib/xtream-playback");
-      const failure = playbackFailure(upstream.status);
-      return Response.json({ message: failure.message }, { status: failure.status, headers: { "Cache-Control": "no-store" } });
+      return playbackFailureResponse(upstream);
     }
     if (params.get("probe") === "1") {
       await upstream.body?.cancel();
@@ -32,7 +37,9 @@ export const Route = createFileRoute("/api/public/xtream")({ staticData: { sitem
     const type = upstream.headers.get("content-type") ?? "application/octet-stream";
     const output = new Headers({ "Cache-Control": "private, no-store", "Content-Type": type });
     if (/mpegurl/i.test(type) || url.pathname.endsWith(".m3u8")) {
-      const text = await upstream.text(); if (text.length > 2 * 1024 * 1024) return new Response(null, { status: 502 });
+      let text: string;
+      try { text = await upstream.text(); } catch { return playbackFailureResponse(); }
+      if (text.length > 2 * 1024 * 1024) return playbackFailureResponse();
       const current = await connection();
       function relay(path: string) {
         const target = new URL(path, url); if (target.origin !== credentials.server) throw new Error();

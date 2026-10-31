@@ -6,4 +6,14 @@ export function playbackFailure(upstreamStatus: number) {
   };
 }
 
+// Release rejected upstream connections without exposing provider URLs or bodies.
+export async function playbackFailureResponse(upstream?: Response) {
+  const failure = playbackFailure(upstream?.status ?? 503);
+  await upstream?.body?.cancel().catch(() => undefined);
+  return Response.json({ available: false, message: failure.message }, {
+    status: failure.status,
+    headers: { "Cache-Control": "no-store" },
+  });
+}
+
 export const smartImportKinds = ["live"] as const;
