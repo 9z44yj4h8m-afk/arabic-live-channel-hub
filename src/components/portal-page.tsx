@@ -329,7 +329,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
               width={1024}
               height={768}
               fetchPriority="high"
-              className={isHome ? "mx-auto h-40 w-auto max-w-full object-contain sm:h-48" : "mx-auto h-24 w-auto max-w-full object-contain sm:h-36"}
+              className={isHome ? "mx-auto h-40 w-auto max-w-full object-contain sm:h-48 landscape:max-h-[18dvh]" : "mx-auto h-24 w-auto max-w-full object-contain sm:h-36"}
             />
             {!isHome && selected && <div className="relative mt-3 sm:mt-5">
               <img
@@ -377,7 +377,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
                 {...("params" in card ? { params: card.params } : {})}
                 className="tpl-card"
               >
-                <span className="block aspect-[3/4] overflow-hidden">
+                <span className="block aspect-[3/4] overflow-hidden landscape:h-[34dvh] landscape:aspect-auto">
                   <img
                     src={design.images[card.to === "/movies" ? "movies" : card.to === "/live" ? "live" : "series"] || card.img}
                     alt={card.title}
@@ -387,7 +387,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
                     className="h-full w-full object-cover"
                   />
                 </span>
-                <span className="grid min-h-20 place-items-center content-center gap-1.5 px-1 py-3">
+                <span className="grid min-h-20 place-items-center content-center gap-1.5 px-1 py-3 landscape:min-h-12 landscape:py-1">
                   <span className="gold-title text-center font-display text-xs font-black leading-5 sm:text-xl">{design.labels[card.to === "/movies" ? "movies" : card.to === "/live" ? "live" : "series"]}</span>
                   <span className="grid h-7 w-7 place-items-center rounded-full border border-accent text-accent">
                     <ChevronLeft className="h-4 w-4" />

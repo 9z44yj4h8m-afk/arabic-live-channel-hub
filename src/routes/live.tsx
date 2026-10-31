@@ -14,5 +14,11 @@ export const Route = createFileRoute("/live")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: () => <PortalPage view="live" />,
+  component: LivePage,
 });
+
+function LivePage() {
+  const native = typeof window !== "undefined" && (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
+  // The native startup redirect runs in the shared shell; keep this route's ordinary browsing behavior.
+  return <PortalPage view="live" />;
+}
