@@ -21,8 +21,6 @@ export const Route = createFileRoute("/api/public/hls")({ staticData: { sitemap:
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ request }) => {
-        const { requireSiteSession } = await import("@/lib/site-gate.server");
-        try { await requireSiteSession(); } catch { return new Response(null, { status: 403, headers: { "Cache-Control": "no-store" } }); }
         const raw = new URL(request.url).searchParams.get("u");
         let target: URL;
         try {

@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdminSession } from "./channel-admin.server";
-import { requireSiteSession } from "./site-gate.server";
 import { connection, encrypt, provider } from "./xtream.server";
 import { credentialsSchema, kindSchema, normalizeRows } from "./xtream";
 import type { Json } from "@/integrations/supabase/types";
@@ -37,7 +36,7 @@ export const syncSubscription = createServerFn({ method: "POST" }).inputValidato
   if (error) throw new Error("لم تكتمل المزامنة؛ أعد المحاولة بعد تحديث اللوحة"); return { count: rows.length };
 });
 export const getSubscriptionItems = createServerFn({ method: "GET" }).inputValidator(z.object({ kind: kindSchema, parent: z.string().regex(/^\d*$/).default("") })).handler(async ({ data }) => {
-  await requireSiteSession(); const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const rows = []; for (let offset = 0; offset < 20000; offset += 1000) {
     const { data: page, error } = await supabaseAdmin.from("xtream_items").select("id,remote_id,name,category,season,episode,position").eq("kind", data.kind).eq("parent_id", data.parent).eq("deleted", false).eq("hidden", false).order("position").order("id").range(offset, offset + 999);
     if (error) throw new Error("تعذّر تحميل محتوى الاشتراك"); rows.push(...page); if (page.length < 1000) break;
