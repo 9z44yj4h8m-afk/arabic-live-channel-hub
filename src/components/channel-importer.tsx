@@ -3,23 +3,23 @@ import { FileUp, Link2, LoaderCircle, Plus, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchPlaylistFromUrl } from "@/lib/channel-import.functions";
 import { Button } from "@/components/ui/button";
-import { categories, type CatalogEntry } from "@/lib/channel-catalog";
+import { categories as defaultCategories, type CatalogEntry } from "@/lib/channel-catalog";
 import { appendImportedChannels, mapCsv, parseImportFile, previewImport, type CsvField, type ImportFile } from "@/lib/channel-import";
 import type { ChannelCategory } from "@/lib/channels";
 
 const fields: Array<[CsvField, string]> = [["name", "اسم القناة"], ["link", "رابط البث"], ["group", "القسم"], ["thumbnail", "الصورة"], ["description", "الوصف"]];
 const inputClass = "h-11 w-full min-w-0 rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent";
 
-export function ChannelImporter({ entries, onImport, onClose }: { entries: CatalogEntry[]; onImport: (entries: CatalogEntry[]) => void; onClose: () => void }) {
+export function ChannelImporter({ entries, onImport, onClose, categories = [...defaultCategories] }: { categories?: string[]; entries: CatalogEntry[]; onImport: (entries: CatalogEntry[]) => void; onClose: () => void }) {
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<ImportFile>();
   const [filename, setFilename] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [fallback, setFallback] = useState<ChannelCategory>("عامة");
+  const [fallback, setFallback] = useState<ChannelCategory>(categories.includes("عامة") ? "عامة" : categories[0] ?? "");
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(0);
-  const preview = useMemo(() => previewImport(file?.rows || [], entries, fallback), [file, entries, fallback]);
+  const preview = useMemo(() => previewImport(file?.rows || [], entries, fallback, categories), [file, entries, fallback, categories]);
   const valid = preview.filter((item) => !item.issue && item.channel);
   const chosen = valid.filter((item) => !excluded.has(item.row.line));
   const mappingMissing = file?.format === "csv" && (file.mapping.name < 0 || file.mapping.link < 0);
