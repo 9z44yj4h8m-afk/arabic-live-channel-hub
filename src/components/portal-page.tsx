@@ -237,9 +237,9 @@ function PortalContent({ section, view, channels }: { section?: string | undefin
               <Settings className="h-5 w-5" />
               الإعدادات
             </button>
-            <Link to="/subscription" className="tpl-top-btn" aria-label="اشتراكي" title="اشتراكي">
+            <Link to="/subscription" className="tpl-top-btn" aria-label="سمارت" title="سمارت">
               <User className="h-5 w-5" />
-              اشتراكي
+              سمارت
             </Link>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -403,6 +403,13 @@ function PortalContent({ section, view, channels }: { section?: string | undefin
               </Link>
             ))}
           </div>
+          <Button asChild size="lg" className="mt-4 w-full gap-3 sm:mt-5">
+            <Link to="/subscription" aria-label="فتح سمارت">
+              <Tv className="h-5 w-5" />
+              <span>سمارت <span dir="ltr">Smarters</span></span>
+              <ChevronLeft className="h-5 w-5" />
+            </Link>
+          </Button>
         </section>}
 
         {!isHome && <div id="channels" className="mx-auto max-w-7xl space-y-8 px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
