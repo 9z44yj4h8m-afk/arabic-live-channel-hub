@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp, Check, Eye, EyeOff, FileUp, LoaderCircle, LogOut, P
 import { Button } from "@/components/ui/button";
 import { ChannelImporter } from "@/components/channel-importer";
 import { DesignEditor } from "@/components/design-editor";
+import { CategoryLabelsEditor } from "@/components/category-labels-editor";
 import { getAdminSession, unlockAdmin, lockAdmin } from "@/lib/channel-admin.functions";
 import { categories, channelFromForm, moveEntry, saveCatalogSchema, type CatalogEntry } from "@/lib/channel-catalog";
 import { getAdminCatalog, saveAdminCatalog } from "@/lib/channel-catalog.functions";
@@ -61,7 +62,7 @@ function ManagementPage() {
       </div>
     </header>
     <main className={`mx-auto px-4 py-6 ${area === "design" ? "max-w-7xl" : "max-w-4xl"}`}>
-      {identity.data?.unlocked && <div className="mb-6 flex flex-wrap gap-2 border-b border-border pb-4" role="tablist" aria-label="أقسام الإدارة"><Button role="tab" aria-selected={area === "channels"} variant={area === "channels" ? "default" : "outline"} onClick={() => setArea("channels")}>إدارة القنوات</Button><Button role="tab" aria-selected={area === "design"} variant={area === "design" ? "default" : "outline"} onClick={() => setArea("design")}>🎨 تعديل التصميم</Button></div>}
+      {identity.data?.unlocked && <div className="mb-6 flex flex-wrap gap-2 border-b border-border pb-4" role="tablist" aria-label="أقسام الإدارة"><Button role="tab" aria-selected={area === "channels"} variant={area === "channels" ? "default" : "outline"} onClick={() => setArea("channels")}>إدارة القنوات</Button><Button role="tab" aria-selected={area === "design"} variant={area === "design" ? "default" : "outline"} onClick={() => setArea("design")}>🎨 تعديل التصميم</Button><Button role="tab" aria-selected={area === "categories"} variant={area === "categories" ? "default" : "outline"} onClick={() => setArea("categories")}>🏷️ أسماء التصنيفات</Button></div>}
       {identity.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : !identity.data?.unlocked ?
         <div className="mx-auto max-w-sm py-16 text-center">
           <ShieldCheck className="mx-auto mb-5 size-12 text-accent" /><h2 className="mb-6 text-xl font-bold">دخول الإدارة</h2>

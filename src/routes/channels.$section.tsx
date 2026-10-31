@@ -1,13 +1,14 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { PortalPage, liveSections } from "@/components/portal-page";
 import { publicChannelsQuery } from "@/lib/channel-catalog.query";
+import { categoryLabelsQuery } from "@/lib/category-labels.query";
 
 export const Route = createFileRoute("/channels/$section")({
   loader: async ({ params, context }) => {
     const s = liveSections.find((x) => x.slug === params.section);
     if (!s) throw notFound();
-    await context.queryClient.ensureQueryData(publicChannelsQuery);
-    return { title: s.title };
+    const [, labels] = await Promise.all([context.queryClient.ensureQueryData(publicChannelsQuery), context.queryClient.ensureQueryData(categoryLabelsQuery)]);
+    return { title: labels[s.slug === "movies" ? "movieChannels" : (s.slug as keyof typeof labels)] || s.title };
   },
   head: ({ loaderData }) => {
     const t = loaderData ? `قنوات ${loaderData.title} — ALMOGHANI LIVE` : "القسم غير موجود";
