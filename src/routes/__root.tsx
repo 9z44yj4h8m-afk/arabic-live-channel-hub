@@ -138,6 +138,16 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   useEffect(() => {
+    const native = (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
+    if (!native) return;
+    const orientation = screen.orientation as ScreenOrientation & { lock?: (value: string) => Promise<void> };
+    void orientation.lock?.("landscape").catch(() => undefined);
+    if (!sessionStorage.getItem("almoghani-native-start") && !["/unlock", "/manage-channels"].includes(window.location.pathname)) {
+      sessionStorage.setItem("almoghani-native-start", "1");
+      void router.navigate({ to: "/" });
+    }
+  }, [router]);
+  useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
       router.invalidate();
