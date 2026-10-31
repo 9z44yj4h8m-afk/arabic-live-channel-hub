@@ -369,6 +369,18 @@
   background: color-mix(in oklab, var(--background) 60%, transparent);
   padding: 0.4rem 0.9rem;
 }
+@utility iptv-cat-search {
+  display: block;
+  width: 100%;
+  min-height: 1.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--secondary) 55%, transparent);
+  padding: 0.1rem 0.4rem;
+  font-size: 0.65rem;
+  line-height: 1.4;
+  font-weight: 700;
+}
 @utility iptv-icon {
   display: grid;
   place-items: center;
