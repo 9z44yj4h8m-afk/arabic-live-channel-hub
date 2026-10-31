@@ -1,11 +1,13 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { PortalPage, liveSections } from "@/components/portal-page";
+import { PortalPage } from "@/components/portal-page";
 import { publicChannelsQuery } from "@/lib/channel-catalog.query";
+import { catalogSectionsQuery } from "@/lib/catalog-sections.query";
 import { categoryLabelsQuery } from "@/lib/category-labels.query";
 
 export const Route = createFileRoute("/channels/$section")({
   loader: async ({ params, context }) => {
-    const s = liveSections.find((x) => x.slug === params.section);
+    const sections = await context.queryClient.ensureQueryData(catalogSectionsQuery);
+    const s = sections.find((x) => x.slug === params.section);
     if (!s) throw notFound();
     const [, labels] = await Promise.all([context.queryClient.ensureQueryData(publicChannelsQuery), context.queryClient.ensureQueryData(categoryLabelsQuery)]);
     return { title: labels[s.slug === "movies" ? "movieChannels" : (s.slug as keyof typeof labels)] || s.title };

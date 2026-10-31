@@ -57,10 +57,11 @@ export function importCategory(group: string, fallback: ChannelCategory): Channe
 export function channelSource(channel: Channel): string {
   return channel.youtubeId ? `video:${channel.youtubeId}` : channel.youtubeChannelId ? `channel:${channel.youtubeChannelId}` : `stream:${channel.streamUrl}`;
 }
-export function previewImport(rows: ImportRow[], existing: CatalogEntry[], fallback: ChannelCategory) {
+export function previewImport(rows: ImportRow[], existing: CatalogEntry[], fallback: ChannelCategory, allowed: readonly string[] = categories) {
   const sources = new Set(existing.map((entry) => channelSource(entry.channel)));
   return rows.map((row) => {
-    const category = importCategory(row.group, fallback);
+    const detected = allowed.find((c) => c === row.group.trim()) ?? importCategory(row.group, fallback);
+    const category = allowed.includes(detected) ? detected : fallback;
     try {
       if (row.issue) throw new Error(row.issue);
       const channel = channelFromForm(row.name, category, row.link, row.description, row.thumbnail);

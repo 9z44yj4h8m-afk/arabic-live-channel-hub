@@ -60,14 +60,17 @@ export type Database = {
         Row: {
           id: number
           revision: number
+          sections: Json | null
         }
         Insert: {
           id?: number
           revision?: number
+          sections?: Json | null
         }
         Update: {
           id?: number
           revision?: number
+          sections?: Json | null
         }
         Relationships: []
       }
@@ -187,6 +190,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      save_catalog_with_sections: {
+        Args: { entries: Json; expected_revision: number; sections: Json }
+        Returns: number
       }
       save_channel_catalog: {
         Args: { entries: Json; expected_revision: number }

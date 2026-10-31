@@ -2,14 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { ArrowDown, ArrowUp, Check, Eye, EyeOff, FileUp, LoaderCircle, LogOut, Plus, RotateCcw, Save, Search, ShieldCheck, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Eye, EyeOff, FileUp, LoaderCircle, LogOut, Pencil, Plus, RotateCcw, Save, Search, ShieldCheck, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChannelImporter } from "@/components/channel-importer";
 import { DesignEditor } from "@/components/design-editor";
 import { CategoryLabelsEditor } from "@/components/category-labels-editor";
 import { getAdminSession, unlockAdmin, lockAdmin } from "@/lib/channel-admin.functions";
-import { categories, channelFromForm, moveEntry, saveCatalogSchema, type CatalogEntry } from "@/lib/channel-catalog";
+import { channelFromForm, moveEntry, saveCatalogSchema, type CatalogEntry } from "@/lib/channel-catalog";
 import { getAdminCatalog, saveAdminCatalog } from "@/lib/channel-catalog.functions";
+import { CatalogSectionsEditor } from "@/components/catalog-sections-editor";
+import { editChannel, type CatalogSection } from "@/lib/catalog-sections";
+import { useSiteDesign } from "@/components/site-design-provider";
 import type { ChannelCategory } from "@/lib/channels";
 
 export const Route = createFileRoute("/manage-channels")({
@@ -76,8 +79,15 @@ function ManagementPage() {
   </div>;
 }
 
-function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revision: number } }) {
+function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revision: number; sections: CatalogSection[] } }) {
   const [entries, setEntries] = useState(initial.entries);
+  const design = useSiteDesign();
+  const [sections, setSections] = useState(initial.sections);
+  const categories = sections.filter((s) => !s.deleted).map((s) => s.category);
+  const sectionTitle = (category: string) => { const s = sections.find((s) => s.category === category); return s ? (s.slug.startsWith("section-") ? s.title : design.labels[s.slug === "movies" ? "movieChannels" : s.slug as keyof typeof design.labels] || s.title) : category; };
+  const [editing, setEditing] = useState<string>();
+  const [newName, setNewName] = useState("");
+  const [newCategory, setNewCategory] = useState("");
   const [revision, setRevision] = useState(initial.revision);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -88,7 +98,7 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [category, setCategory] = useState<ChannelCategory>("إخبارية");
+  const [category, setCategory] = useState<ChannelCategory>(categories[0] ?? "");
   const save = useServerFn(saveAdminCatalog);
   const client = useQueryClient();
   const activeCount = entries.filter((e) => !e.deleted).length;
@@ -97,9 +107,9 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
   async function handleSave() {
     setSaving(true); setMessage("");
     try {
-      const result = await save({ data: saveCatalogSchema.parse({ entries, revision }) });
+      const result = await save({ data: saveCatalogSchema.parse({ entries, revision, sections }) });
       setRevision(result.revision); setDirty(false); setMessage("تم حفظ التغييرات");
-      await client.invalidateQueries({ queryKey: ["public-channels"] });
+      await Promise.all([client.invalidateQueries({ queryKey: ["public-channels"] }), client.invalidateQueries({ queryKey: ["catalog-sections"] })]);
     } catch (error) { setMessage(`لم يتم الحفظ: ${error instanceof Error ? error.message : "خطأ غير معروف"}`); }
     finally { setSaving(false); }
   }
@@ -129,19 +139,20 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
   const inputClass = "h-11 w-full min-w-0 rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent";
   return <>
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{activeCount} قناة <span className="mx-2">·</span> {dirty ? "تغييرات غير محفوظة" : "القائمة محفوظة"}</p><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={saving} onClick={() => { setImporting(true); setAdding(false); }}><FileUp />استيراد ملف</Button><Button onClick={() => { setAdding(true); setImporting(false); }}><Plus />إضافة قناة</Button></div></div>
-    {importing && <ChannelImporter entries={entries} onClose={() => setImporting(false)} onImport={(next) => { change(next); setImporting(false); setTab("active"); setFilter(""); setCategoryFilter(""); setSelected(new Set()); setMessage(`تمت إضافة ${next.length - entries.length} قناة؛ اضغط حفظ لاعتمادها.`); }} />}
+    <CatalogSectionsEditor sections={sections.map((s) => ({ ...s, title: sectionTitle(s.category) }))} entries={entries} onChange={(next, rows) => { setSections(next); change(rows); if (!next.some((s) => !s.deleted && s.category === category)) setCategory(next.find((s) => !s.deleted)?.category ?? ""); setCategoryFilter(""); }} />
+    {importing && <ChannelImporter categories={categories} entries={entries} onClose={() => setImporting(false)} onImport={(next) => { change(next); setImporting(false); setTab("active"); setFilter(""); setCategoryFilter(""); setSelected(new Set()); setMessage(`تمت إضافة ${next.length - entries.length} قناة؛ اضغط حفظ لاعتمادها.`); }} />}
     {adding && <form onSubmit={add} className="mb-6 border-y border-border py-5">
       <div className="mb-4 flex items-center justify-between"><h2 className="font-bold">قناة جديدة</h2><Button type="button" variant="ghost" size="icon" aria-label="إغلاق الإضافة" title="إغلاق" onClick={() => setAdding(false)}><X /></Button></div>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-2 text-sm">اسم القناة<input name="name" required maxLength={120} className={inputClass} /></label>
-        <label className="grid gap-2 text-sm">القسم<select className={inputClass} value={category} onChange={(e) => setCategory(e.target.value as ChannelCategory)}>{categories.map((c) => <option key={c}>{c}</option>)}</select></label>
+        <label className="grid gap-2 text-sm">القسم<select className={inputClass} value={category} onChange={(e) => setCategory(e.target.value as ChannelCategory)}>{categories.map((c) => <option key={c} value={c}>{sectionTitle(c)}</option>)}</select></label>
         <label className="grid gap-2 text-sm sm:col-span-2">رابط البث أو يوتيوب<input name="link" type="url" dir="ltr" required maxLength={2048} placeholder="https://" className={inputClass} /></label>
         <label className="grid gap-2 text-sm">الوصف (اختياري)<input name="description" maxLength={240} className={inputClass} /></label>
         <label className="grid gap-2 text-sm">رابط الصورة (اختياري)<input name="thumbnail" type="url" dir="ltr" maxLength={2048} className={inputClass} /></label>
       </div><Button type="submit" className="mt-4"><Plus />إضافة للقائمة</Button>
     </form>}
     <div className="mb-4 flex border-b border-border" role="tablist" aria-label="حالة القنوات">{(["active", "deleted"] as const).map((value) => <Button key={value} role="tab" aria-selected={tab === value} variant="ghost" className={`rounded-none border-b-2 ${tab === value ? "border-accent text-accent" : "border-transparent text-muted-foreground"}`} onClick={() => { setTab(value); setSelected(new Set()); }}>{value === "active" ? `القنوات (${activeCount})` : `المحذوفة (${entries.length - activeCount})`}</Button>)}</div>
-    <div className="mb-4 grid gap-3 sm:grid-cols-2"><label className="relative"><Search className="absolute right-3 top-3 size-5 text-muted-foreground" /><input aria-label="بحث عن قناة" placeholder="بحث عن قناة" value={filter} onChange={(e) => setFilter(e.target.value)} className={`${inputClass} pr-10`} /></label><select aria-label="تصفية القسم" className={inputClass} value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}><option value="">كل الأقسام</option>{categories.map((c) => <option key={c}>{c}</option>)}</select></div>
+    <div className="mb-4 grid gap-3 sm:grid-cols-2"><label className="relative"><Search className="absolute right-3 top-3 size-5 text-muted-foreground" /><input aria-label="بحث عن قناة" placeholder="بحث عن قناة" value={filter} onChange={(e) => setFilter(e.target.value)} className={`${inputClass} pr-10`} /></label><select aria-label="تصفية القسم" className={inputClass} value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}><option value="">كل الأقسام</option>{categories.map((c) => <option key={c} value={c}>{sectionTitle(c)}</option>)}</select></div>
     {tab === "active" && rows.length > 0 && <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
       <label className="flex cursor-pointer items-center gap-2 text-sm font-bold"><input type="checkbox" className="size-5 accent-accent" checked={rows.every((r) => selected.has(r.channel.id))} onChange={(e) => { const next = new Set(selected); rows.forEach((r) => { if (e.target.checked) next.add(r.channel.id); else next.delete(r.channel.id); }); setSelected(next); }} />تحديد الكل</label>
       <div className="flex flex-wrap gap-2">
@@ -149,16 +160,22 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
       <Button variant="outline" size="sm" disabled={!selected.size} onClick={deleteSelected}><Trash2 />{selected.size ? `حذف المحدد (${selected.size})` : "حذف المحدد"}</Button>
       </div>
     </div>}
-    <div className="divide-y divide-border">{rows.map((entry) => <div key={entry.channel.id} className="flex items-center gap-3 py-3">
+    <div className="divide-y divide-border">{rows.map((entry) => <div key={entry.channel.id} className="flex flex-wrap items-center gap-2 py-3">
       {!entry.deleted && <input type="checkbox" className="size-5 shrink-0 accent-accent" aria-label={`تحديد ${entry.channel.name}`} checked={selected.has(entry.channel.id)} onChange={() => toggleSelected(entry.channel.id)} />}
       <img src={entry.channel.thumbnail} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/icon-192.png"; }} className="h-12 w-16 shrink-0 rounded-md bg-surface object-contain" />
-      <div className="min-w-0 flex-1"><p className="break-words text-sm font-bold">{entry.channel.name}{entry.hidden && !entry.deleted && <span className="ms-2 text-xs font-normal text-accent">مخفية عن الشاشة</span>}</p><p className="mt-1 text-xs text-muted-foreground">{entry.channel.category}</p></div>
-      <div className="flex shrink-0 gap-1">{entry.deleted ? <Button variant="outline" size="sm" onClick={() => change(entries.map((e) => e.channel.id === entry.channel.id ? { ...e, deleted: false } : e))}><RotateCcw />استرداد</Button> : <>
+      <div className="min-w-0 flex-1"><p className="break-words text-sm font-bold">{entry.channel.name}{entry.hidden && !entry.deleted && <span className="ms-2 text-xs font-normal text-accent">مخفية عن الشاشة</span>}</p><p className="mt-1 text-xs text-muted-foreground">{sectionTitle(entry.channel.category)}</p></div>
+      <div className="flex shrink-0 flex-wrap gap-1">{entry.deleted ? <Button variant="outline" size="sm" onClick={() => change(entries.map((e) => e.channel.id === entry.channel.id ? { ...e, deleted: false } : e))}><RotateCcw />استرداد</Button> : <>
+        <Button variant="ghost" size="icon" title="تغيير اسم القناة ونقلها" aria-label={`تعديل ونقل ${entry.channel.name}`} onClick={() => { setEditing(entry.channel.id); setNewName(entry.channel.name); setNewCategory(entry.channel.category); }}><Pencil /></Button>
         <Button variant="ghost" size="icon" aria-label={`${entry.hidden ? "إظهار" : "إخفاء"} ${entry.channel.name}`} title={entry.hidden ? "إظهار في شاشة العرض" : "إخفاء من شاشة العرض"} onClick={() => change(entries.map((e) => e.channel.id === entry.channel.id ? { ...e, hidden: !e.hidden } : e))}>{entry.hidden ? <EyeOff /> : <Eye />}</Button>
         <Button variant="ghost" size="icon" aria-label={`رفع ${entry.channel.name}`} title="رفع" onClick={() => change(moveEntry(entries, entry.channel.id, -1))}><ArrowUp /></Button>
         <Button variant="ghost" size="icon" aria-label={`خفض ${entry.channel.name}`} title="خفض" onClick={() => change(moveEntry(entries, entry.channel.id, 1))}><ArrowDown /></Button>
         <Button variant="ghost" size="icon" aria-label={`حذف ${entry.channel.name}`} title="حذف" onClick={() => change(entries.map((e) => e.channel.id === entry.channel.id ? { ...e, deleted: true } : e))}><Trash2 /></Button>
       </>}</div>
+      {editing === entry.channel.id && <form className="grid w-full gap-3 border-t border-border pt-3 sm:grid-cols-2" onSubmit={(event) => { event.preventDefault(); try { change(editChannel(entries, entry.channel.id, newName, newCategory)); setEditing(undefined); } catch (e) { setMessage(e instanceof Error ? e.message : "اسم غير صالح"); } }}>
+        <label className="grid gap-2 text-sm">اسم القناة الجديد<input aria-label="اسم القناة الجديد" required maxLength={120} value={newName} onChange={(e) => setNewName(e.target.value)} className={inputClass} /></label>
+        <label className="grid gap-2 text-sm">نقل القناة إلى<select aria-label="نقل القناة إلى" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className={inputClass}>{categories.map((c) => <option key={c} value={c}>{sectionTitle(c)}</option>)}</select></label>
+        <div className="flex gap-2"><Button type="submit"><Check />اعتماد التعديل</Button><Button type="button" variant="outline" onClick={() => setEditing(undefined)}><X />إلغاء</Button></div>
+      </form>}
     </div>)}</div>
     {!rows.length && <p className="py-10 text-center text-sm text-muted-foreground">{tab === "deleted" ? "لا توجد قنوات محذوفة" : "لا توجد قنوات مطابقة"}</p>}
     <footer className="sticky bottom-0 mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background/95 py-4 backdrop-blur">
