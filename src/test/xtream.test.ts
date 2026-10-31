@@ -11,9 +11,10 @@ describe("subscription rules", () => {
     ]);
   });
   it("retains seasons and episodes", () => expect(normalizeRows([{ id: "5", title: "حلقة", season: 2, episode_num: 3 }], {}, "episode")[0]).toMatchObject({ remote_id: "5", season: 2, episode: 3 }));
-  it("rejects private and insecure credential destinations", () => {
-    for (const server of ["https://127.0.0.1", "https://10.1.1.1", "http://provider.example", "https://provider.example/?password=x"]) expect(() => credentialsSchema.parse({ server, username: "fixture", password: "fixture" })).toThrow();
+  it("rejects private credential destinations", () => {
+    for (const server of ["https://127.0.0.1", "http://10.1.1.1:8080", "ftp://provider.example", "https://provider.example/?password=x"]) expect(() => credentialsSchema.parse({ server, username: "fixture", password: "fixture" })).toThrow();
   });
+  it("accepts public HTTP servers with a port", () => expect(credentialsSchema.parse({ server: "http://provider.example:8080", username: "fixture", password: "fixture" }).server).toBe("http://provider.example:8080"));
   it("rejects duplicate source IDs", () => expect(() => normalizeRows([{ stream_id: 1, name: "a" }, { stream_id: 1, name: "b" }], {}, "live")).toThrow());
   it("validates the opening PIN on the server", () => { expect(passwordMatches("fixture-123", "fixture-123")).toBe(true); expect(passwordMatches("wrong", "fixture-123")).toBe(false); });
 });
