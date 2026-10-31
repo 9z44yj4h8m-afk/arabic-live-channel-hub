@@ -16,4 +16,23 @@ export async function playbackFailureResponse(upstream?: Response) {
   });
 }
 
+// Once headers are sent, a failed upstream must end media, not crash the HTTP relay.
+export function relayMediaBody(body: ReadableStream<Uint8Array> | null) {
+  if (!body) return null;
+  const reader = body.getReader();
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const chunk = await reader.read();
+        if (chunk.done) controller.close();
+        else controller.enqueue(chunk.value);
+      } catch {
+        controller.close();
+        await reader.cancel().catch(() => undefined);
+      }
+    },
+    async cancel(reason) { await reader.cancel(reason).catch(() => undefined); },
+  });
+}
+
 export const smartImportKinds = ["live"] as const;

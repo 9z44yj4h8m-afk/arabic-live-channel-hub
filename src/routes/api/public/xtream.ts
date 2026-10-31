@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { playbackFailureResponse } from "@/lib/xtream-playback";
+import { playbackFailureResponse, relayMediaBody } from "@/lib/xtream-playback";
 export const Route = createFileRoute("/api/public/xtream")({ staticData: { sitemap: false }, server: { handlers: { GET: async ({ request }) => {
   try {
     const { connection, encrypt, decrypt } = await import("@/lib/xtream.server");
@@ -49,6 +49,6 @@ export const Route = createFileRoute("/api/public/xtream")({ staticData: { sitem
       output.set("Content-Type", "application/vnd.apple.mpegurl"); return new Response(body, { headers: output });
     }
     for (const name of ["content-range", "accept-ranges", "content-length"]) { const value = upstream.headers.get(name); if (value) output.set(name, value); }
-    return new Response(upstream.body, { status: upstream.status, headers: output });
+    return new Response(relayMediaBody(upstream.body), { status: upstream.status, headers: output });
   } catch { return new Response(null, { status: 403, headers: { "Cache-Control": "no-store" } }); }
 } } } });

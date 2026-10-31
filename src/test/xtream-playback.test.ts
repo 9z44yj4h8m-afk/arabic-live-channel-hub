@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { playbackFailure, playbackFailureResponse, smartImportKinds } from "../lib/xtream-playback";
+import { playbackFailure, playbackFailureResponse, relayMediaBody, smartImportKinds } from "../lib/xtream-playback";
 
 describe("Smart playback", () => {
   it("treats provider 456 as access refusal instead of an application 502", () => {
@@ -32,5 +32,13 @@ describe("Smart playback", () => {
     const response = await playbackFailureResponse(new Response("private upstream details", { status: 502 }));
     expect(response.status).toBe(503);
     expect(await response.text()).not.toContain("private upstream details");
+  });
+  it("contains mid-stream provider disconnects without throwing from the relay", async () => {
+    const body = new ReadableStream<Uint8Array>({ pull() { throw new Error("upstream disconnected"); } });
+    expect(await new Response(relayMediaBody(body)).text()).toBe("");
+  });
+  it("preserves successful media bytes", async () => {
+    const body = new Response("media bytes").body;
+    expect(await new Response(relayMediaBody(body)).text()).toBe("media bytes");
   });
 });
