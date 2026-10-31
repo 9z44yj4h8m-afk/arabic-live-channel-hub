@@ -170,7 +170,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
     const items = visibleSections.flatMap((s, idx) =>
       channels
         .filter((c) => c.category === s.category)
-        .map((c) => ({ ...c, thumb: c.thumbnail, subtitle: c.description, group: groupTitles[idx] })),
+        .map((c) => ({ ...c, thumb: c.thumbnail, subtitle: c.description, group: groupTitles[idx] ?? s.title })),
     );
     return (
       <>
