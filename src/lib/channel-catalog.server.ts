@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { seedEntries, type CatalogEntry } from "./channel-catalog";
 import type { Channel } from "./channels";
+import { defaultSections, sectionsSchema } from "./catalog-sections";
 
 export function publicCatalogClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
@@ -18,16 +19,16 @@ export function publicCatalogClient() {
   });
 }
 export async function readCatalog(client: SupabaseClient<Database>) {
-  const { data: state, error: stateError } = await client.from("channel_catalog_state").select("revision").eq("id", 1).maybeSingle();
+  const { data: state, error: stateError } = await client.from("channel_catalog_state").select("revision,sections").eq("id", 1).maybeSingle();
   if (stateError) throw new Error("تعذّر تحميل القنوات. حاول مجددًا.");
-  if (!state?.revision) return { revision: 0, entries: seedEntries() };
+  if (!state?.revision) return { revision: 0, entries: seedEntries(), sections: defaultSections() };
   const { data, error } = await client.from("channel_catalog_entries").select("channel,position,deleted,hidden").order("position");
   if (error) throw new Error("تعذّر تحميل القنوات. حاول مجددًا.");
   const entries: CatalogEntry[] = (data ?? []).map((row) => {
     const r = row as { channel: unknown; position: number; deleted: boolean; hidden?: boolean | null };
     return { channel: r.channel as Channel, position: r.position, deleted: r.deleted, hidden: r.hidden === true };
   });
-  return { revision: state.revision, entries };
+  return { revision: state.revision, entries, sections: state.sections ? sectionsSchema.parse(state.sections) : defaultSections() };
 }
 export async function requireAdmin(client: SupabaseClient<Database>, userId: string) {
   const { data, error } = await client.rpc("has_role", { _user_id: userId, _role: "admin" });
