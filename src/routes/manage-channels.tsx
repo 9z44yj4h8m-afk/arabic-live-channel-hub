@@ -99,7 +99,7 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
       const result = await save({ data: saveCatalogSchema.parse({ entries, revision }) });
       setRevision(result.revision); setDirty(false); setMessage("تم حفظ التغييرات");
       await client.invalidateQueries({ queryKey: ["public-channels"] });
-    } catch { setMessage("لم يتم الحفظ. أعد المحاولة، أو أعد تحميل الصفحة إذا عدّلت من جهاز آخر."); }
+    } catch (error) { setMessage(`لم يتم الحفظ: ${error instanceof Error ? error.message : "خطأ غير معروف"}`); }
     finally { setSaving(false); }
   }
   function add(event: FormEvent<HTMLFormElement>) {
