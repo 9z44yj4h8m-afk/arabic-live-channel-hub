@@ -14,7 +14,7 @@ export function SubscriptionEditor({ onImported }: { onImported?: () => void } =
   const [message, setMessage] = useState(""); const [busy, setBusy] = useState(false); const [parent, setParent] = useState("");
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); const form = e.currentTarget; const data = new FormData(form); setBusy(true); setMessage("");
-    try { await save({ data: { revision: status.data?.revision ?? 0, credentials: { server: String(data.get("server")), username: String(data.get("username")), password: String(data.get("password")) } } }); form.reset(); await status.refetch(); setMessage("تم الحفظ؛ يبدأ تحديث القنوات تلقائيًا"); setTimeout(() => void syncEverything(), 0); return; }
+    try { await save({ data: { revision: status.data?.revision ?? 0, credentials: { server: ((v) => /^https?:\/\//i.test(v) ? v : `http://${v}`)(String(data.get("server")).trim()), username: String(data.get("username")), password: String(data.get("password")) } } }); form.reset(); await status.refetch(); setMessage("تم الحفظ؛ يبدأ تحديث القنوات تلقائيًا"); setTimeout(() => void syncEverything(), 0); return; }
     catch (error) { setMessage(error instanceof Error ? error.message : "لم يُحفظ الاشتراك"); } finally { setBusy(false); }
   }
   async function synchronize(kind: XtreamKind) {
