@@ -25,7 +25,7 @@ export type CatalogEntry = { channel: Channel; position: number; deleted: boolea
 export const saveCatalogSchema = z.object({
   revision: z.number().int().nonnegative(),
   sections: sectionsSchema.optional(),
-  entries: z.array(z.object({ channel: channelSchema, position: z.number().int().nonnegative(), deleted: z.boolean(), hidden: z.boolean().optional() })).max(2000),
+  entries: z.array(z.object({ channel: channelSchema, position: z.number().int().nonnegative(), deleted: z.boolean(), hidden: z.boolean().optional() })).max(15000),
 }).refine(({ entries }) => new Set(entries.map((e) => e.channel.id)).size === entries.length, "معرّف قناة مكرر");
 export function seedEntries(): CatalogEntry[] {
   return channels.map((channel, position) => ({ channel, position, deleted: false }));
