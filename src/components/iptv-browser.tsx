@@ -3,6 +3,7 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { lockSite } from "@/lib/site-gate.functions";
+import { channelDisplayName } from "@/lib/channel-names";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 export type BrowserItem = { id: string; name: string; thumb?: string; subtitle?: string; group: string };
@@ -123,7 +124,7 @@ export function IptvBrowser<T extends BrowserItem>({
           {selected && (
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 px-1">
               <div className="min-w-0">
-                <p className="truncate text-sm font-black">{selected.name}</p>
+                <p className="truncate text-sm font-black">{channelDisplayName(selected.name)}</p>
                 {selected.subtitle && <p className="line-clamp-2 text-xs text-muted-foreground">{selected.subtitle}</p>}
               </div>
               <button type="button" onClick={() => toggleFav(selected.id)} className="iptv-icon" aria-label={favs.includes(selected.id) ? "إزالة من المفضلة" : "إضافة للمفضلة"} aria-pressed={favs.includes(selected.id)}>
@@ -163,7 +164,7 @@ export function IptvBrowser<T extends BrowserItem>({
                     ) : (
                       <span className="h-8 w-12 shrink-0 rounded bg-surface-deep" />
                     )}
-                    <span className="min-w-0 flex-1 truncate text-right text-sm font-bold">{item.name}</span>
+                    <span className="min-w-0 truncate text-right text-sm font-bold">{channelDisplayName(item.name)}</span>
                     {favs.includes(item.id) && <Heart className="h-3.5 w-3.5 shrink-0 fill-current text-live" />}
                   </button>
                 </li>

@@ -1,0 +1,7 @@
+const arabicNames: Record<string, string> = {
+  "al jazeera": "الجزيرة", "aljazeera": "الجزيرة", "al jazeera mubasher": "الجزيرة مباشر", "al arabiya": "العربية", "alarabiya": "العربية", "al hadath": "الحدث", "alhadath": "الحدث", "sky news arabia": "سكاي نيوز عربية", "dubai": "دبي", "dubai tv": "دبي", "sharjah tv": "الشارقة", "qatar tv": "تلفزيون قطر", "abu dhabi tv": "أبوظبي", "bahrain tv": "تلفزيون البحرين", "oman tv": "تلفزيون عمان", "saudi tv": "السعودية", "saudi quran": "القرآن الكريم", "saudi sunnah": "السنة النبوية", "rotana cinema": "روتانا سينما", "rotana khalijia": "روتانا خليجية", "rotana classic": "روتانا كلاسيك", "mbc": "إم بي سي", "mbc 1": "إم بي سي 1", "mbc 2": "إم بي سي 2", "mbc 3": "إم بي سي 3", "mbc 4": "إم بي سي 4", "mbc action": "إم بي سي أكشن", "mbc drama": "إم بي سي دراما", "mbc masr": "إم بي سي مصر", "mbc iraq": "إم بي سي العراق", "al manar": "المنار", "al mayadeen": "الميادين", "al aqsa": "الأقصى", "palestine tv": "تلفزيون فلسطين", "al resalah": "الرسالة", "iqraa": "اقرأ", "spacetoon": "سبيستون", "al kass": "الكأس", "dubai sports": "دبي الرياضية", "sharjah sports": "الشارقة الرياضية", "abu dhabi sports": "أبوظبي الرياضية", "al ehsan tv": "الإحسان", "al ehsan": "الإحسان",
+};
+export function channelDisplayName(name: string) {
+  const clean = name.replace(/[\u200b\u200e\u200f\ufeff]/g, "").replace(/\s+/g, " ").trim();
+  return arabicNames[clean.toLowerCase()] ?? clean;
+}
