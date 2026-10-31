@@ -15,6 +15,7 @@ import { Route as LiveRouteImport } from './routes/live'
 import { Route as ManageChannelsRouteImport } from './routes/manage-channels'
 import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as QuranRouteImport } from './routes/quran'
+import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ChannelsSectionRouteImport } from './routes/channels.$section'
 import { Route as ApiPublicDesignRouteImport } from './routes/api/public/design'
@@ -50,6 +51,11 @@ const QuranRoute = QuranRouteImport.update({
   path: '/quran',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UnlockRoute = UnlockRouteImport.update({
+  id: '/unlock',
+  path: '/unlock',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
+  '/unlock': typeof UnlockRoute
   '/api/chat': typeof ApiChatRoute
   '/channels/$section': typeof ChannelsSectionRoute
   '/api/public/design': typeof ApiPublicDesignRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
+  '/unlock': typeof UnlockRoute
   '/api/chat': typeof ApiChatRoute
   '/channels/$section': typeof ChannelsSectionRoute
   '/api/public/design': typeof ApiPublicDesignRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
+  '/unlock': typeof UnlockRoute
   '/api/chat': typeof ApiChatRoute
   '/channels/$section': typeof ChannelsSectionRoute
   '/api/public/design': typeof ApiPublicDesignRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/manage-channels'
     | '/movies'
     | '/quran'
+    | '/unlock'
     | '/api/chat'
     | '/channels/$section'
     | '/api/public/design'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/manage-channels'
     | '/movies'
     | '/quran'
+    | '/unlock'
     | '/api/chat'
     | '/channels/$section'
     | '/api/public/design'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/manage-channels'
     | '/movies'
     | '/quran'
+    | '/unlock'
     | '/api/chat'
     | '/channels/$section'
     | '/api/public/design'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   ManageChannelsRoute: typeof ManageChannelsRoute
   MoviesRoute: typeof MoviesRoute
   QuranRoute: typeof QuranRoute
+  UnlockRoute: typeof UnlockRoute
   ApiChatRoute: typeof ApiChatRoute
   ChannelsSectionRoute: typeof ChannelsSectionRoute
   ApiPublicDesignRoute: typeof ApiPublicDesignRoute
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuranRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/unlock': {
+      id: '/unlock'
+      path: '/unlock'
+      fullPath: '/unlock'
+      preLoaderRoute: typeof UnlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManageChannelsRoute: ManageChannelsRoute,
   MoviesRoute: MoviesRoute,
   QuranRoute: QuranRoute,
+  UnlockRoute: UnlockRoute,
   ApiChatRoute: ApiChatRoute,
   ChannelsSectionRoute: ChannelsSectionRoute,
   ApiPublicDesignRoute: ApiPublicDesignRoute,
