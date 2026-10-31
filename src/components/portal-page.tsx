@@ -39,6 +39,7 @@ import tplCardLive from "@/assets/tpl-card-live.jpg";
 import tplCardSeries from "@/assets/tpl-card-series.jpg";
 import tplCardMovies from "@/assets/tpl-card-movies.jpg";
 import { AppBottomNav } from "@/components/app-bottom-nav";
+import { IptvBrowser } from "@/components/iptv-browser";
 import { DesignElements, useSiteDesign } from "@/components/site-design-provider";
 import { InstallAppButton } from "@/components/install-app-button";
 import { LivePlayer } from "@/components/live-player";
@@ -163,6 +164,36 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
   }
 
   const previewMode = false;
+
+  if (!isHome) {
+    const groupTitles = visibleSections.map((s) => design.labels[s.slug === "movies" ? "movieChannels" : s.slug as keyof typeof design.labels] || s.title);
+    const items = visibleSections.flatMap((s, idx) =>
+      channels
+        .filter((c) => c.category === s.category)
+        .map((c) => ({ ...c, thumb: c.thumbnail, subtitle: c.description, group: groupTitles[idx] ?? s.title })),
+    );
+    return (
+      <>
+        <IptvBrowser
+          title={section ? groupTitles[0] ?? "القنوات" : "البث التلفزيوني المباشر"}
+          items={items}
+          groups={groupTitles}
+          storageKey="almoghani-live"
+          initialId={selectedId}
+          onBack={goBack}
+          renderPlayer={(c) => (
+            <div id="player" className="relative">
+              <span className="absolute left-2 top-2 z-10 live-badge px-2 py-0.5 text-[10px]">
+                <span className="h-1.5 w-1.5 animate-live-pulse rounded-full bg-live-foreground" />LIVE
+              </span>
+              <LivePlayer key={c.id} channel={c} />
+            </div>
+          )}
+        />
+        <DesignElements />
+      </>
+    );
+  }
 
   return (
     <div dir="rtl" className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
