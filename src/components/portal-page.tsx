@@ -72,8 +72,14 @@ const mainCards = [
 ];
 
 export function PortalPage({ section, view = "live" }: { section?: string; view?: "home" | "live" }) {
-  const design = useSiteDesign();
+  return view === "home" ? <PortalContent view="home" channels={[]} /> : <ChannelPortal section={section} />;
+}
+function ChannelPortal({ section }: { section?: string }) {
   const { data: channels } = useSuspenseQuery(publicChannelsQuery);
+  return <PortalContent section={section} view="live" channels={channels} />;
+}
+function PortalContent({ section, view, channels }: { section?: string; view: "home" | "live"; channels: Channel[] }) {
+  const design = useSiteDesign();
   const { data: catalogSections } = useSuspenseQuery(catalogSectionsQuery);
   const sections = catalogSections.filter((s) => !s.deleted).map((s) => ({ ...s, title: design.labels[s.slug === "movies" ? "movieChannels" : s.slug as keyof typeof design.labels] || s.title, icon: seedSections.find((b) => b.slug === s.slug)?.icon ?? Tv, cols: "sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6" }));
   const isHome = view === "home";
@@ -112,6 +118,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isHome) { navigate({ to: "/live" }); return; }
     const query = searchQuery.trim();
     if (query.length < 2) {
       setSearchError("اكتب اسم قناة أو وصفًا من كلمتين على الأقل.");

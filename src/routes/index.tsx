@@ -1,10 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PortalPage } from "@/components/portal-page";
-import { publicChannelsQuery } from "@/lib/channel-catalog.query";
 
 export const Route = createFileRoute("/")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(publicChannelsQuery),
   head: () => ({
+    links: [{ rel: "canonical", href: "https://arabic-live-channel-hub.lovable.app/" }],
     meta: [
       { title: "ALMOGHANI IPTV — الرئيسية" },
       {

@@ -82,7 +82,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   beforeLoad: async ({ location }) => {
-    if (location.pathname === "/unlock" || location.pathname === "/manage-channels" || location.pathname.startsWith("/api/")) return;
+    if (location.pathname === "/" || location.pathname === "/unlock" || location.pathname === "/manage-channels" || location.pathname === "/sitemap.xml" || location.pathname.startsWith("/api/")) return;
     if (!(await getSiteAccess()).unlocked) throw redirect({ to: "/unlock" });
   },
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(publishedDesignQuery), context.queryClient.ensureQueryData(categoryLabelsQuery), context.queryClient.ensureQueryData(catalogSectionsQuery)]),

@@ -21,6 +21,8 @@ export const Route = createFileRoute("/api/public/hls")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ request }) => {
+        const { requireSiteSession } = await import("@/lib/site-gate.server");
+        try { await requireSiteSession(); } catch { return new Response(null, { status: 403, headers: { "Cache-Control": "no-store" } }); }
         const raw = new URL(request.url).searchParams.get("u");
         let target: URL;
         try {
@@ -57,7 +59,7 @@ export const Route = createFileRoute("/api/public/hls")({
             })
             .join("\n");
           return new Response(rewritten, {
-            headers: { ...CORS, "content-type": "application/vnd.apple.mpegurl", "cache-control": "max-age=3" },
+            headers: { ...CORS, "content-type": "application/vnd.apple.mpegurl", "cache-control": "private, no-store" },
           });
         }
 
@@ -65,7 +67,7 @@ export const Route = createFileRoute("/api/public/hls")({
           headers: {
             ...CORS,
             "content-type": upstream.headers.get("content-type") ?? "video/mp2t",
-            "cache-control": "max-age=60",
+            "cache-control": "private, no-store",
           },
         });
       },
