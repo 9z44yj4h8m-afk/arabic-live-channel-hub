@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { catalogSectionsQuery } from "@/lib/catalog-sections.query";
 import { publicChannelsQuery } from "@/lib/channel-catalog.query";
 import {
   ArrowRight,
@@ -47,7 +48,7 @@ import { Button } from "@/components/ui/button";
 import { searchChannelsWithAi } from "@/lib/channel-search.functions";
 import { type Channel, type ChannelCategory } from "@/lib/channels";
 
-const sections: {
+const seedSections: {
   slug: string;
   title: string;
   category: ChannelCategory;
@@ -63,7 +64,7 @@ const sections: {
   { slug: "general", title: "عامة", category: "عامة" as ChannelCategory, icon: Tv, cols: "sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6" },
 ];
 
-export const liveSections = sections;
+export const liveSections = seedSections;
 
 const mainCards = [
   { title: "الأفلام", img: tplCardMovies, to: "/movies" as const },
@@ -74,8 +75,10 @@ const mainCards = [
 export function PortalPage({ section, view = "live" }: { section?: string; view?: "home" | "live" }) {
   const design = useSiteDesign();
   const { data: channels } = useSuspenseQuery(publicChannelsQuery);
+  const { data: catalogSections } = useSuspenseQuery(catalogSectionsQuery);
+  const sections = catalogSections.filter((s) => !s.deleted).map((s) => ({ ...s, title: design.labels[s.slug === "movies" ? "movieChannels" : s.slug as keyof typeof design.labels] || s.title, icon: seedSections.find((b) => b.slug === s.slug)?.icon ?? Tv, cols: "sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6" }));
   const isHome = view === "home";
-  const visibleSections = isHome ? [] : section ? sections.filter((s) => s.slug === section) : sections.filter((s) => s.slug !== "series" && s.slug !== "movies");
+  const visibleSections = isHome ? [] : section ? sections.filter((s) => s.slug === section || catalogSections.find((r) => r.slug === section && r.deleted) && s.slug === "general") : sections.filter((s) => s.slug !== "series" && s.slug !== "movies");
   const [selectedId, setSelectedId] = useState<string | undefined>();
   const selected = channels.find((c) => c.id === selectedId) ?? channels.find((c) => c.category === visibleSections[0]?.category) ?? channels[0];
   const [searchOpen, setSearchOpen] = useState(false);
@@ -368,7 +371,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
 
         {isHome && <section className="mx-auto max-w-3xl px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8" aria-label="الأقسام الرئيسية">
           <div data-design="cards" className="grid grid-cols-3 gap-3 sm:gap-5">
-            {mainCards.map((card) => (
+            {mainCards.filter((card) => !("params" in card) || sections.some((s) => s.slug === card.params.section)).map((card) => (
               <Link
                 key={card.title}
                 to={card.to}
