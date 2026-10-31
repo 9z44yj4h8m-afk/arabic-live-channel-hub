@@ -8,5 +8,5 @@ export function channelDisplayName(name: string) {
   const base = suffix ? clean.slice(0, -suffix.length).trim() : clean;
   const overrides: Record<string, string> = { "al quran al kareem tv": "القرآن الكريم", "al sunnah al nabawiyah tv": "السنة النبوية", "bahrain quran": "البحرين للقرآن الكريم", "bahrain sports 2": "البحرين الرياضية 2", "panorama fm": "بانوراما إف إم", "al arabiya programs": "العربية برامج", "al mashhad": "المشهد", "al yawm tv": "اليوم", "ktv news": "الكويت الإخبارية", "cgtn arabic": "سي جي تي إن العربية" };
   const known = overrides[base.toLowerCase()] ?? (officialNames as Record<string, string>)[base.toLowerCase()] ?? arabicNames[base.toLowerCase()];
-  return known ? known + suffix : clean;
+  return (known ? known + suffix : clean).replace(/[\u200b\u200e\u200f\ufeff]/g, "").replace(/\s+/g, " ").trim();
 }
