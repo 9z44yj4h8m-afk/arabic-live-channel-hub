@@ -7,7 +7,7 @@
   "start_url": "/live",
   "scope": "/",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "landscape",
   "background_color": "#070d24",
   "theme_color": "#070d24",
   "icons": [

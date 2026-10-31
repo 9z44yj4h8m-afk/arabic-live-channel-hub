@@ -342,3 +342,58 @@
 @keyframes design-pulse { 50% { filter: brightness(1.18); } }
 @media (max-width: 640px) { .site-design-custom [data-design="channel-grid"] { grid-template-columns: repeat(min(2, var(--design-columns)), minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .site-design-custom *, .site-design-custom *::before { animation: none !important; transition-duration: 0.01ms !important; } }
+
+/* IPTV landscape browser (live, series, movies) */
+@utility iptv-shell {
+  background: radial-gradient(120% 90% at 50% 0%, color-mix(in oklab, var(--primary) 10%, var(--background)), var(--background));
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility iptv-bar {
+  border-bottom: 2px solid color-mix(in oklab, var(--accent) 55%, transparent);
+  background: color-mix(in oklab, var(--surface) 85%, transparent);
+}
+@utility iptv-panel {
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent);
+  background: color-mix(in oklab, var(--surface) 75%, transparent);
+}
+@utility iptv-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--background) 60%, transparent);
+  padding: 0.4rem 0.9rem;
+}
+@utility iptv-icon {
+  display: grid;
+  place-items: center;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--foreground);
+}
+@utility iptv-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--secondary) 70%, transparent);
+  padding: 0.35rem 0.6rem;
+  font-weight: 700;
+  transition: border-color 0.15s, background 0.15s;
+}
+@utility iptv-row-active {
+  border: 2px solid var(--accent);
+  background: color-mix(in oklab, var(--accent) 16%, var(--secondary));
+  color: var(--accent);
+}
