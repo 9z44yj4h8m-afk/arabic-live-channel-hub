@@ -29,7 +29,7 @@ function ManagementPage() {
   const [message, setMessage] = useState("");
   const [signingIn, setSigningIn] = useState(false);
   const [password, setPassword] = useState("");
-  const [area, setArea] = useState<"channels" | "design">("channels");
+  const [area, setArea] = useState<"channels" | "design" | "categories">("channels");
   const sessionFn = useServerFn(getAdminSession);
   const unlock = useServerFn(unlockAdmin);
   const lock = useServerFn(lockAdmin);
@@ -69,7 +69,7 @@ function ManagementPage() {
           <form onSubmit={signIn} className="grid gap-3"><label className="grid gap-2 text-right text-sm">الرقم السري<input type="password" inputMode="numeric" autoComplete="current-password" required maxLength={128} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 w-full rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent" /></label><Button type="submit" size="lg" disabled={signingIn || identity.isError}>{signingIn ? <LoaderCircle className="animate-spin" /> : <ShieldCheck />}دخول</Button></form>
           {identity.isError && <p role="alert" className="mt-4 text-sm text-accent">تعذّر فتح اللوحة. أعد تحميل الصفحة.</p>}
           {message && <p role="alert" className="mt-4 text-sm text-accent">{message}</p>}
-        </div> : area === "design" ? <DesignEditor /> : catalog.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : catalog.error ?
+        </div> : area === "design" ? <DesignEditor /> : area === "categories" ? <CategoryLabelsEditor /> : catalog.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : catalog.error ?
         <div className="py-12 text-center"><ShieldCheck className="mx-auto mb-4 size-10 text-accent" /><h2 className="text-xl font-bold">تعذّر تحميل القنوات</h2><p className="mt-3 text-sm text-muted-foreground">حاول مجددًا أو أعد فتح اللوحة بالرقم السري.</p><Button className="mt-5" variant="outline" onClick={() => catalog.refetch()}>إعادة المحاولة</Button></div> : catalog.data ?
         <CatalogEditor initial={catalog.data} key={catalog.data.revision} /> : null}
     </main>
