@@ -25,9 +25,10 @@
 - Resolve each YouTube channel's current live video server-side (resolveYoutubeLive, using youtubeChannelId) and embed by video ID, because YouTube's embed/live_stream?channel= URL shows "video unavailable".
 - Keep player behaviour (volume, quality, auto-reconnect with backoff, settings in localStorage) in src/components/live-player.tsx so every page shares one player.
 - Ship the site as an installable web app via public/manifest.webmanifest starting on the homepage with no service worker, so installs preserve content choices and never serve stale cached files.
-- Keep the shared application PIN in a server secret with a separate encrypted session; guard subscription reads and relay requests server-side, because a hidden view is not access control.
+- Keep the homepage public without fetching protected channel data, and the viewing PIN in a server secret with a separate encrypted session; guard content reads and relay requests server-side, because a hidden view is not access control.
 - Keep Xtream metadata separate from the existing channel catalog; administrator-only functions encrypt credentials and synchronize revision-checked provider IDs, while playback relays same-origin upstream media through opaque encrypted links to avoid credential leakage.
 - Normalize channel names through the shared display-name module using official IPTV-org alternative names, preserving source IDs and quality suffixes; keep catalog reads paginated so worldwide imports are never truncated.
+- Keep sitemap inclusion explicit in each route and derive public URLs from the router; include only the public homepage while viewing and management remain gated, avoiding private-content discovery.
 - Relay streams whose CDN demands a specific Referer through /api/public/hls (host allow-list, playlists rewritten), because browsers cannot set Referer.
 - Build the featured-movies list server-side from official YouTube channel searches (getFeaturedMovies, 1h cache, full-length filter) with the hand-picked list in src/lib/movies.ts as fallback.
 - Store section display names in category_labels (public read, writes only via the password admin session server function) keyed by fixed section keys, merged over design labels in SiteDesignProvider, so renaming never changes channel categories, slugs or links.

@@ -16,7 +16,7 @@ import { editChannel, type CatalogSection } from "@/lib/catalog-sections";
 import { useSiteDesign } from "@/components/site-design-provider";
 import type { ChannelCategory } from "@/lib/channels";
 
-export const Route = createFileRoute("/manage-channels")({
+export const Route = createFileRoute("/manage-channels")({ staticData: { sitemap: false },
   head: () => ({ meta: [
     { title: "إدارة القنوات — ALMOGHANI" },
     { name: "description", content: "لوحة الإدارة الخاصة بقنوات المغني." },

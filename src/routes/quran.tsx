@@ -7,7 +7,7 @@ import quranIcon from "@/assets/quran-icon.jpg";
 type Surah = { number: number; name: string; numberOfAyahs: number; revelationType: string };
 type Ayah = { numberInSurah: number; text: string };
 
-export const Route = createFileRoute("/quran")({
+export const Route = createFileRoute("/quran")({ staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "القرآن الكريم — ALMOGHANI" },

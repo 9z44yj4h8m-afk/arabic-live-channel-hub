@@ -22,7 +22,7 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 
 const STORAGE_KEY = "almoghani-chat-v1";
 
-export const Route = createFileRoute("/chat")({
+export const Route = createFileRoute("/chat")({ staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "ALMOGHANI AI — مساعد ذكي" },

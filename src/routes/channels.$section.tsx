@@ -4,7 +4,7 @@ import { publicChannelsQuery } from "@/lib/channel-catalog.query";
 import { catalogSectionsQuery } from "@/lib/catalog-sections.query";
 import { categoryLabelsQuery } from "@/lib/category-labels.query";
 
-export const Route = createFileRoute("/channels/$section")({
+export const Route = createFileRoute("/channels/$section")({ staticData: { sitemap: false },
   loader: async ({ params, context }) => {
     const sections = await context.queryClient.ensureQueryData(catalogSectionsQuery);
     const s = sections.find((x) => x.slug === params.section);

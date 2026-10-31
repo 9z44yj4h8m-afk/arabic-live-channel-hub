@@ -15,6 +15,7 @@ import { Route as LiveRouteImport } from './routes/live'
 import { Route as ManageChannelsRouteImport } from './routes/manage-channels'
 import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as QuranRouteImport } from './routes/quran'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SubscriptionRouteImport } from './routes/subscription'
 import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -51,6 +52,11 @@ const MoviesRoute = MoviesRouteImport.update({
 const QuranRoute = QuranRouteImport.update({
   id: '/quran',
   path: '/quran',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SubscriptionRoute = SubscriptionRouteImport.update({
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/subscription': typeof SubscriptionRoute
   '/unlock': typeof UnlockRoute
   '/api/chat': typeof ApiChatRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/subscription': typeof SubscriptionRoute
   '/unlock': typeof UnlockRoute
   '/api/chat': typeof ApiChatRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/subscription': typeof SubscriptionRoute
   '/unlock': typeof UnlockRoute
   '/api/chat': typeof ApiChatRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/manage-channels'
     | '/movies'
     | '/quran'
+    | '/sitemap.xml'
     | '/subscription'
     | '/unlock'
     | '/api/chat'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/manage-channels'
     | '/movies'
     | '/quran'
+    | '/sitemap.xml'
     | '/subscription'
     | '/unlock'
     | '/api/chat'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/manage-channels'
     | '/movies'
     | '/quran'
+    | '/sitemap.xml'
     | '/subscription'
     | '/unlock'
     | '/api/chat'
@@ -190,6 +202,7 @@ export interface RootRouteChildren {
   ManageChannelsRoute: typeof ManageChannelsRoute
   MoviesRoute: typeof MoviesRoute
   QuranRoute: typeof QuranRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SubscriptionRoute: typeof SubscriptionRoute
   UnlockRoute: typeof UnlockRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -241,6 +254,13 @@ declare module '@tanstack/react-router' {
       path: '/quran'
       fullPath: '/quran'
       preLoaderRoute: typeof QuranRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/subscription': {
@@ -302,6 +322,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManageChannelsRoute: ManageChannelsRoute,
   MoviesRoute: MoviesRoute,
   QuranRoute: QuranRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SubscriptionRoute: SubscriptionRoute,
   UnlockRoute: UnlockRoute,
   ApiChatRoute: ApiChatRoute,
