@@ -64,6 +64,13 @@
       "when": 1793414225280,
       "tag": "0008_xtream_playback_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793414508301,
+      "tag": "0009_worldwide_catalog_capacity",
+      "breakpoints": true
     }
   ]
 }
