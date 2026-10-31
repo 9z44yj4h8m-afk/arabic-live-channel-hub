@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { channels, type Channel } from "./channels";
+import { sectionsSchema } from "./catalog-sections";
 
 export const categories = ["إخبارية", "رياضية", "إسلامية", "مسلسلات وأفلام", "أفلام كاملة", "أطفال ووثائقي", "عامة"] as const;
 const httpsUrl = z.string().url().max(2048).refine((value) => {
@@ -12,7 +13,7 @@ const existingRelay = z.string().refine((value) => channels.some((c) => c.stream
 export const channelSchema = z.object({
   id: z.string().min(1).max(80).regex(/^[a-zA-Z0-9_-]+$/),
   name: z.string().trim().min(1).max(120),
-  category: z.enum(categories),
+  category: z.string().trim().min(1).max(80),
   description: z.string().trim().max(240),
   thumbnail: z.union([httpsUrl, z.literal("/icon-192.png")]),
   youtubeId: z.string().regex(/^[a-zA-Z0-9_-]{11}$/).optional(),
@@ -22,6 +23,7 @@ export const channelSchema = z.object({
 export type CatalogEntry = { channel: Channel; position: number; deleted: boolean; hidden?: boolean };
 export const saveCatalogSchema = z.object({
   revision: z.number().int().nonnegative(),
+  sections: sectionsSchema.optional(),
   entries: z.array(z.object({ channel: channelSchema, position: z.number().int().nonnegative(), deleted: z.boolean(), hidden: z.boolean().optional() })).max(2000),
 }).refine(({ entries }) => new Set(entries.map((e) => e.channel.id)).size === entries.length, "معرّف قناة مكرر");
 export function seedEntries(): CatalogEntry[] {

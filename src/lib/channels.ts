@@ -1,4 +1,4 @@
-export type ChannelCategory = "إخبارية" | "رياضية" | "إسلامية" | "مسلسلات وأفلام" | "أفلام كاملة" | "أطفال ووثائقي" | "عامة";
+export type ChannelCategory = string;
 
 export type Channel = {
   id: string;
