@@ -20,5 +20,6 @@ describe("subscription rules", () => {
 describe("channel names", () => {
   it("removes trailing and repeated whitespace", () => expect(channelDisplayName("  قناة   عربية  \u200f")).toBe("قناة عربية"));
   it("uses Arabic for known Arabic stations", () => expect(channelDisplayName(" Al Jazeera ")).toBe("الجزيرة"));
+  it("translates Arabic stations while retaining quality labels", () => expect(channelDisplayName("Al Ekhbariya (360p)  ")).toBe("السعودية الإخبارية (360p)"));
   it("preserves foreign station identity", () => expect(channelDisplayName("BBC News")).toBe("BBC News"));
 });

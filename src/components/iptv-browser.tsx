@@ -117,7 +117,7 @@ export function IptvBrowser<T extends BrowserItem>({
         </nav>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-2 p-2 landscape:grid-cols-[minmax(120px,17%)_minmax(0,1fr)_minmax(0,50%)] portrait:grid-cols-1 md:grid-cols-[minmax(140px,18%)_minmax(0,1fr)_minmax(0,50%)]">
+      <div className="grid min-h-0 flex-1 gap-2 p-2 landscape:grid-cols-[minmax(120px,17%)_minmax(0,1fr)_minmax(0,50%)] portrait:grid-cols-1 md:landscape:grid-cols-[minmax(140px,18%)_minmax(0,1fr)_minmax(0,50%)]">
         {/* Player column (last in landscape = leftmost in RTL, first on portrait) */}
         <section className="iptv-panel flex min-h-0 flex-col gap-2 p-2 portrait:order-first landscape:order-3 md:order-3" aria-label="المشغل">
           <div className="overflow-hidden rounded-lg bg-surface-deep">{selected ? renderPlayer(selected) : null}</div>

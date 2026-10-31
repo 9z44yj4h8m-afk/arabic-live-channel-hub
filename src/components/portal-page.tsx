@@ -387,9 +387,9 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
                     className="h-full w-full object-cover"
                   />
                 </span>
-                <span className="grid min-h-20 place-items-center content-center gap-1.5 px-1 py-3 landscape:min-h-12 landscape:py-1">
+                <span className="grid min-h-20 place-items-center content-center gap-1.5 px-1 py-3 landscape:min-h-8 landscape:py-1">
                   <span className="gold-title text-center font-display text-xs font-black leading-5 sm:text-xl">{design.labels[card.to === "/movies" ? "movies" : card.to === "/live" ? "live" : "series"]}</span>
-                  <span className="grid h-7 w-7 place-items-center rounded-full border border-accent text-accent">
+                  <span className="grid h-7 w-7 place-items-center rounded-full border border-accent text-accent landscape:hidden">
                     <ChevronLeft className="h-4 w-4" />
                   </span>
                 </span>
