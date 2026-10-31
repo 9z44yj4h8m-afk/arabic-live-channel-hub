@@ -24,6 +24,7 @@
 - Keep the AI chat streaming through the /api/chat server route with history stored only in the visitor's browser, so no login or database is needed.
 - Resolve each YouTube channel's current live video server-side (resolveYoutubeLive, using youtubeChannelId) and embed by video ID, because YouTube's embed/live_stream?channel= URL shows "video unavailable".
 - Keep player behaviour (volume, quality, auto-reconnect with backoff, settings in localStorage) in src/components/live-player.tsx so every page shares one player.
+- Probe Xtream playback before mounting a media source and render provider access refusals in the player without automatic retries, so unavailable subscriptions cannot blank the channel browser or flood playback requests.
 - Ship the site as an installable web app via public/manifest.webmanifest starting on the homepage with no service worker, so installs preserve content choices and never serve stale cached files.
 - Keep the homepage and viewing routes public without a viewing PIN; retain independent password administrator authorization for all management reads and writes, and never expose subscription credentials in public payloads or playback URLs.
 - Keep Xtream metadata separate from the existing channel catalog; administrator-only functions encrypt credentials and synchronize revision-checked provider IDs, while playback relays same-origin upstream media through opaque encrypted links to avoid credential leakage.
