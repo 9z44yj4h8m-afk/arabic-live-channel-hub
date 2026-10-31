@@ -21,7 +21,7 @@ export function IptvBrowser<T extends BrowserItem>({
   items: T[];
   groups: string[];
   storageKey: string;
-  initialId?: string;
+  initialId?: string | undefined;
   onBack: () => void;
   renderPlayer: (item: T) => ReactNode;
 }) {
