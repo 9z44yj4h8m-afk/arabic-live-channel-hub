@@ -74,11 +74,11 @@ const mainCards = [
 export function PortalPage({ section, view = "live" }: { section?: string; view?: "home" | "live" }) {
   return view === "home" ? <PortalContent view="home" channels={[]} /> : <ChannelPortal section={section} />;
 }
-function ChannelPortal({ section }: { section?: string }) {
+function ChannelPortal({ section }: { section?: string | undefined }) {
   const { data: channels } = useSuspenseQuery(publicChannelsQuery);
   return <PortalContent section={section} view="live" channels={channels} />;
 }
-function PortalContent({ section, view, channels }: { section?: string; view: "home" | "live"; channels: Channel[] }) {
+function PortalContent({ section, view, channels }: { section?: string | undefined; view: "home" | "live"; channels: Channel[] }) {
   const design = useSiteDesign();
   const { data: catalogSections } = useSuspenseQuery(catalogSectionsQuery);
   const sections = catalogSections.filter((s) => !s.deleted).map((s) => ({ ...s, title: design.labels[s.slug === "movies" ? "movieChannels" : s.slug as keyof typeof design.labels] || s.title, icon: seedSections.find((b) => b.slug === s.slug)?.icon ?? Tv, cols: "sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6" }));
