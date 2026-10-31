@@ -4,8 +4,10 @@ import { publicCatalogClient, readCatalog } from "./channel-catalog.server";
 import { requireAdminSession } from "./channel-admin.server";
 import type { Json } from "@/integrations/supabase/types";
 import { defaultSections } from "./catalog-sections";
+import { requireSiteSession } from "./site-gate.server";
 
 export const getPublicChannels = createServerFn({ method: "GET" }).handler(async () => {
+  await requireSiteSession();
   return activeChannels((await readCatalog(publicCatalogClient())).entries);
 });
 export const getCatalogSections = createServerFn({ method: "GET" }).handler(async () => {

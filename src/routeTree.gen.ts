@@ -15,10 +15,13 @@ import { Route as LiveRouteImport } from './routes/live'
 import { Route as ManageChannelsRouteImport } from './routes/manage-channels'
 import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as QuranRouteImport } from './routes/quran'
+import { Route as SubscriptionRouteImport } from './routes/subscription'
+import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ChannelsSectionRouteImport } from './routes/channels.$section'
 import { Route as ApiPublicDesignRouteImport } from './routes/api/public/design'
 import { Route as ApiPublicHlsRouteImport } from './routes/api/public/hls'
+import { Route as ApiPublicXtreamRouteImport } from './routes/api/public/xtream'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -50,6 +53,16 @@ const QuranRoute = QuranRouteImport.update({
   path: '/quran',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubscriptionRoute = SubscriptionRouteImport.update({
+  id: '/subscription',
+  path: '/subscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnlockRoute = UnlockRouteImport.update({
+  id: '/unlock',
+  path: '/unlock',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -70,6 +83,11 @@ const ApiPublicHlsRoute = ApiPublicHlsRouteImport.update({
   path: '/api/public/hls',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicXtreamRoute = ApiPublicXtreamRouteImport.update({
+  id: '/api/public/xtream',
+  path: '/api/public/xtream',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -78,10 +96,13 @@ export interface FileRoutesByFullPath {
   '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
+  '/subscription': typeof SubscriptionRoute
+  '/unlock': typeof UnlockRoute
   '/api/chat': typeof ApiChatRoute
   '/channels/$section': typeof ChannelsSectionRoute
   '/api/public/design': typeof ApiPublicDesignRoute
   '/api/public/hls': typeof ApiPublicHlsRoute
+  '/api/public/xtream': typeof ApiPublicXtreamRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -90,10 +111,13 @@ export interface FileRoutesByTo {
   '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
+  '/subscription': typeof SubscriptionRoute
+  '/unlock': typeof UnlockRoute
   '/api/chat': typeof ApiChatRoute
   '/channels/$section': typeof ChannelsSectionRoute
   '/api/public/design': typeof ApiPublicDesignRoute
   '/api/public/hls': typeof ApiPublicHlsRoute
+  '/api/public/xtream': typeof ApiPublicXtreamRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -103,10 +127,13 @@ export interface FileRoutesById {
   '/manage-channels': typeof ManageChannelsRoute
   '/movies': typeof MoviesRoute
   '/quran': typeof QuranRoute
+  '/subscription': typeof SubscriptionRoute
+  '/unlock': typeof UnlockRoute
   '/api/chat': typeof ApiChatRoute
   '/channels/$section': typeof ChannelsSectionRoute
   '/api/public/design': typeof ApiPublicDesignRoute
   '/api/public/hls': typeof ApiPublicHlsRoute
+  '/api/public/xtream': typeof ApiPublicXtreamRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,10 +144,13 @@ export interface FileRouteTypes {
     | '/manage-channels'
     | '/movies'
     | '/quran'
+    | '/subscription'
+    | '/unlock'
     | '/api/chat'
     | '/channels/$section'
     | '/api/public/design'
     | '/api/public/hls'
+    | '/api/public/xtream'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -129,10 +159,13 @@ export interface FileRouteTypes {
     | '/manage-channels'
     | '/movies'
     | '/quran'
+    | '/subscription'
+    | '/unlock'
     | '/api/chat'
     | '/channels/$section'
     | '/api/public/design'
     | '/api/public/hls'
+    | '/api/public/xtream'
   id:
     | '__root__'
     | '/'
@@ -141,10 +174,13 @@ export interface FileRouteTypes {
     | '/manage-channels'
     | '/movies'
     | '/quran'
+    | '/subscription'
+    | '/unlock'
     | '/api/chat'
     | '/channels/$section'
     | '/api/public/design'
     | '/api/public/hls'
+    | '/api/public/xtream'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -154,10 +190,13 @@ export interface RootRouteChildren {
   ManageChannelsRoute: typeof ManageChannelsRoute
   MoviesRoute: typeof MoviesRoute
   QuranRoute: typeof QuranRoute
+  SubscriptionRoute: typeof SubscriptionRoute
+  UnlockRoute: typeof UnlockRoute
   ApiChatRoute: typeof ApiChatRoute
   ChannelsSectionRoute: typeof ChannelsSectionRoute
   ApiPublicDesignRoute: typeof ApiPublicDesignRoute
   ApiPublicHlsRoute: typeof ApiPublicHlsRoute
+  ApiPublicXtreamRoute: typeof ApiPublicXtreamRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -204,6 +243,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuranRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/subscription': {
+      id: '/subscription'
+      path: '/subscription'
+      fullPath: '/subscription'
+      preLoaderRoute: typeof SubscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unlock': {
+      id: '/unlock'
+      path: '/unlock'
+      fullPath: '/unlock'
+      preLoaderRoute: typeof UnlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -232,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHlsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/xtream': {
+      id: '/api/public/xtream'
+      path: '/api/public/xtream'
+      fullPath: '/api/public/xtream'
+      preLoaderRoute: typeof ApiPublicXtreamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -242,10 +302,13 @@ const rootRouteChildren: RootRouteChildren = {
   ManageChannelsRoute: ManageChannelsRoute,
   MoviesRoute: MoviesRoute,
   QuranRoute: QuranRoute,
+  SubscriptionRoute: SubscriptionRoute,
+  UnlockRoute: UnlockRoute,
   ApiChatRoute: ApiChatRoute,
   ChannelsSectionRoute: ChannelsSectionRoute,
   ApiPublicDesignRoute: ApiPublicDesignRoute,
   ApiPublicHlsRoute: ApiPublicHlsRoute,
+  ApiPublicXtreamRoute: ApiPublicXtreamRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

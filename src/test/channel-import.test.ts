@@ -49,9 +49,9 @@ describe("channel file imports", () => {
     expect(() => parseImportFile("#EXTM3U\n#EXT-X-TARGETDURATION:10\n#EXTINF:10,\nsegment.ts")).toThrow();
     expect(() => parseImportFile("")).toThrow();
   });
-  it("respects the existing 2000-entry catalog capacity", () => {
+  it("supports the worldwide catalog up to 15000 entries", () => {
     const channel = channelFromForm("اختبار", "عامة", "https://example.com/live.m3u8", "", "");
-    const entries: CatalogEntry[] = Array.from({ length: 2000 }, (_, position) => ({ channel, position, deleted: true }));
+    const entries: CatalogEntry[] = Array.from({ length: 15000 }, (_, position) => ({ channel, position, deleted: true }));
     const extra = channelFromForm("جديدة", "عامة", "https://example.com/new.m3u8", "", "");
     expect(() => appendImportedChannels(entries, [extra])).toThrow();
   });

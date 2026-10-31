@@ -84,6 +84,6 @@ export function appendImportedChannels(entries: CatalogEntry[], channels: Channe
     sources.add(source);
     next.push({ channel, position: position++, deleted: false, hidden: false });
   }
-  if (next.length > 2000) throw new Error("الحد الأقصى للقائمة 2000 قناة، بما فيها المحذوفة.");
+  if (next.length > 15000) throw new Error("الحد الأقصى للقائمة 15000 قناة، بما فيها المحذوفة.");
   return next;
 }

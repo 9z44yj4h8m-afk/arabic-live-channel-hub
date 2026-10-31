@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { channels, type Channel } from "./channels";
 import { sectionsSchema } from "./catalog-sections";
+import { channelDisplayName } from "./channel-names";
 
 export const categories = ["إخبارية", "رياضية", "إسلامية", "مسلسلات وأفلام", "أفلام كاملة", "أطفال ووثائقي", "عامة"] as const;
 const httpsUrl = z.string().url().max(2048).refine((value) => {
@@ -12,7 +13,7 @@ const httpsUrl = z.string().url().max(2048).refine((value) => {
 const existingRelay = z.string().refine((value) => channels.some((c) => c.streamUrl === value && value.startsWith("/api/public/hls?u=")), "رابط بث غير صالح");
 export const channelSchema = z.object({
   id: z.string().min(1).max(80).regex(/^[a-zA-Z0-9_-]+$/),
-  name: z.string().trim().min(1).max(120),
+  name: z.string().transform(channelDisplayName).pipe(z.string().min(1).max(120)),
   category: z.string().trim().min(1).max(80),
   description: z.string().trim().max(240),
   thumbnail: z.union([httpsUrl, z.literal("/icon-192.png")]),
@@ -24,13 +25,13 @@ export type CatalogEntry = { channel: Channel; position: number; deleted: boolea
 export const saveCatalogSchema = z.object({
   revision: z.number().int().nonnegative(),
   sections: sectionsSchema.optional(),
-  entries: z.array(z.object({ channel: channelSchema, position: z.number().int().nonnegative(), deleted: z.boolean(), hidden: z.boolean().optional() })).max(2000),
+  entries: z.array(z.object({ channel: channelSchema, position: z.number().int().nonnegative(), deleted: z.boolean(), hidden: z.boolean().optional() })).max(15000),
 }).refine(({ entries }) => new Set(entries.map((e) => e.channel.id)).size === entries.length, "معرّف قناة مكرر");
 export function seedEntries(): CatalogEntry[] {
   return channels.map((channel, position) => ({ channel, position, deleted: false }));
 }
 export function activeChannels(entries: CatalogEntry[]) {
-  return [...entries].sort((a, b) => a.position - b.position).filter((e) => !e.deleted && !e.hidden).map((e) => e.channel);
+  return [...entries].sort((a, b) => a.position - b.position).filter((e) => !e.deleted && !e.hidden).map((e) => ({ ...e.channel, name: channelDisplayName(e.channel.name) }));
 }
 export function moveEntry(entries: CatalogEntry[], id: string, direction: -1 | 1): CatalogEntry[] {
   const result = [...entries].sort((a, b) => a.position - b.position);

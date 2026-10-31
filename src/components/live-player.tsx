@@ -145,6 +145,8 @@ export function LivePlayer({ channel }: { channel: Channel }) {
   // HLS playback: native on Safari/iOS, hls.js elsewhere.
   useEffect(() => {
     if (!channel.streamUrl) return;
+    const streamUrl = channel.streamUrl;
+    const directVideo = streamUrl.includes("format=video");
     const video = videoRef.current;
     if (!video) return;
     let destroyed = false;
@@ -164,19 +166,19 @@ export function LivePlayer({ channel }: { channel: Channel }) {
       window.clearTimeout(stallTimer);
       stallTimer = window.setTimeout(drop, 15000);
     };
-    const onEnded = () => drop();
+    const onEnded = () => { if (!directVideo) drop(); };
     video.addEventListener("playing", onPlaying);
     video.addEventListener("waiting", onWaiting);
     video.addEventListener("stalled", onWaiting);
     video.addEventListener("ended", onEnded);
 
     const playNative = () => {
-      if (!video.canPlayType("application/vnd.apple.mpegurl")) return drop();
-      video.src = channel.streamUrl!;
+      if (!directVideo && !video.canPlayType("application/vnd.apple.mpegurl")) return drop();
+      video.src = streamUrl;
       video.addEventListener("error", drop, { once: true });
       void video.play().catch(() => undefined);
     };
-    {
+    if (directVideo) playNative(); else {
       // Prefer hls.js (incl. iOS ManagedMediaSource) so requests go out without
       // a Referer header — some CDNs (e.g. MBC/Shahid) reject foreign referrers.
       import("hls.js")
@@ -211,7 +213,7 @@ export function LivePlayer({ channel }: { channel: Channel }) {
             hlsRef.current = null;
             drop();
           });
-          hls.loadSource(channel.streamUrl!);
+          hls.loadSource(streamUrl);
           hls.attachMedia(video);
         })
         .catch(drop);

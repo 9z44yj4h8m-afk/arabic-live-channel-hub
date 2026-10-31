@@ -1,5 +1,9 @@
-import { ArrowRight, Clock, Heart, Home, LayoutGrid, Search } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { ArrowRight, Clock, Heart, Home, LayoutGrid, Search, LockKeyhole, Tv } from "lucide-react";
+import { Link, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { Button } from "@/components/ui/button";
+import { lockSite } from "@/lib/site-gate.functions";
+import { channelDisplayName } from "@/lib/channel-names";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 export type BrowserItem = { id: string; name: string; thumb?: string; subtitle?: string; group: string };
@@ -25,6 +29,8 @@ export function IptvBrowser<T extends BrowserItem>({
   onBack: () => void;
   renderPlayer: (item: T) => ReactNode;
 }) {
+  const router = useRouter();
+  const lock = useServerFn(lockSite);
   const [group, setGroup] = useState("__all");
   const [catQuery, setCatQuery] = useState("");
   const [query, setQuery] = useState("");
@@ -104,19 +110,21 @@ export function IptvBrowser<T extends BrowserItem>({
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="بحث" aria-label="بحث في القائمة" className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
         </label>
         <nav className="flex shrink-0 items-center gap-1.5" aria-label="التنقل">
+          <Link to="/subscription" className="iptv-icon" aria-label="اشتراكي" title="اشتراكي"><Tv className="h-4 w-4" /></Link>
+          <Button size="icon" variant="ghost" aria-label="قفل التطبيق" title="قفل التطبيق" onClick={async () => { await lock(); router.options.context.queryClient.clear(); await router.navigate({ to: "/unlock" }); }}><LockKeyhole className="h-4 w-4" /></Button>
           <Link to="/" className="iptv-icon" aria-label="الرئيسية"><Home className="h-4 w-4" /></Link>
           <Link to="/live" className="iptv-icon" aria-label="البث المباشر"><LayoutGrid className="h-4 w-4" /></Link>
         </nav>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-2 p-2 landscape:grid-cols-[minmax(120px,17%)_minmax(0,1fr)_minmax(0,50%)] portrait:grid-cols-1 md:grid-cols-[minmax(140px,18%)_minmax(0,1fr)_minmax(0,50%)]">
+      <div className="grid min-h-0 flex-1 gap-2 p-2 landscape:grid-cols-[minmax(120px,17%)_minmax(0,1fr)_minmax(0,50%)] portrait:grid-cols-1 md:landscape:grid-cols-[minmax(140px,18%)_minmax(0,1fr)_minmax(0,50%)]">
         {/* Player column (last in landscape = leftmost in RTL, first on portrait) */}
         <section className="iptv-panel flex min-h-0 flex-col gap-2 p-2 portrait:order-first landscape:order-3 md:order-3" aria-label="المشغل">
           <div className="overflow-hidden rounded-lg bg-surface-deep">{selected ? renderPlayer(selected) : null}</div>
           {selected && (
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 px-1">
               <div className="min-w-0">
-                <p className="truncate text-sm font-black">{selected.name}</p>
+                <p className="truncate text-sm font-black">{channelDisplayName(selected.name)}</p>
                 {selected.subtitle && <p className="line-clamp-2 text-xs text-muted-foreground">{selected.subtitle}</p>}
               </div>
               <button type="button" onClick={() => toggleFav(selected.id)} className="iptv-icon" aria-label={favs.includes(selected.id) ? "إزالة من المفضلة" : "إضافة للمفضلة"} aria-pressed={favs.includes(selected.id)}>
@@ -156,7 +164,7 @@ export function IptvBrowser<T extends BrowserItem>({
                     ) : (
                       <span className="h-8 w-12 shrink-0 rounded bg-surface-deep" />
                     )}
-                    <span className="min-w-0 flex-1 truncate text-right text-sm font-bold">{item.name}</span>
+                    <span className="min-w-0 truncate text-right text-sm font-bold">{channelDisplayName(item.name)}</span>
                     {favs.includes(item.id) && <Heart className="h-3.5 w-3.5 shrink-0 fill-current text-live" />}
                   </button>
                 </li>

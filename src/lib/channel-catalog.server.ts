@@ -22,8 +22,13 @@ export async function readCatalog(client: SupabaseClient<Database>) {
   const { data: state, error: stateError } = await client.from("channel_catalog_state").select("revision,sections").eq("id", 1).maybeSingle();
   if (stateError) throw new Error("تعذّر تحميل القنوات. حاول مجددًا.");
   if (!state?.revision) return { revision: 0, entries: seedEntries(), sections: defaultSections() };
-  const { data, error } = await client.from("channel_catalog_entries").select("channel,position,deleted,hidden").order("position");
-  if (error) throw new Error("تعذّر تحميل القنوات. حاول مجددًا.");
+  const data = [];
+  for (let offset = 0; offset < 15000; offset += 1000) {
+    const { data: page, error } = await client.from("channel_catalog_entries").select("channel,position,deleted,hidden").order("position").order("id").range(offset, offset + 999);
+    if (error) throw new Error("تعذّر تحميل القنوات. حاول مجددًا.");
+    data.push(...page);
+    if (page.length < 1000) break;
+  }
   const entries: CatalogEntry[] = (data ?? []).map((row) => {
     const r = row as { channel: unknown; position: number; deleted: boolean; hidden?: boolean | null };
     return { channel: r.channel as Channel, position: r.position, deleted: r.deleted, hidden: r.hidden === true };

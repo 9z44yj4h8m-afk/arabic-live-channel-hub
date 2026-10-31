@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  redirect,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
@@ -17,6 +18,7 @@ import { SiteDesignProvider } from "@/components/site-design-provider";
 import { publishedDesignQuery } from "@/lib/site-design.query";
 import { catalogSectionsQuery } from "@/lib/catalog-sections.query";
 import { categoryLabelsQuery } from "@/lib/category-labels.query";
+import { getSiteAccess } from "@/lib/site-gate.functions";
 
 function NotFoundComponent() {
   return (
@@ -79,6 +81,10 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  beforeLoad: async ({ location }) => {
+    if (location.pathname === "/unlock" || location.pathname === "/manage-channels" || location.pathname.startsWith("/api/")) return;
+    if (!(await getSiteAccess()).unlocked) throw redirect({ to: "/unlock" });
+  },
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(publishedDesignQuery), context.queryClient.ensureQueryData(categoryLabelsQuery), context.queryClient.ensureQueryData(catalogSectionsQuery)]),
   head: () => ({
     meta: [
@@ -131,6 +137,16 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  useEffect(() => {
+    const native = (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
+    if (!native) return;
+    const orientation = screen.orientation as ScreenOrientation & { lock?: (value: string) => Promise<void> };
+    void orientation.lock?.("landscape").catch(() => undefined);
+    if (!sessionStorage.getItem("almoghani-native-start") && !["/unlock", "/manage-channels"].includes(window.location.pathname)) {
+      sessionStorage.setItem("almoghani-native-start", "1");
+      void router.navigate({ to: "/" });
+    }
+  }, [router]);
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;

@@ -139,6 +139,7 @@ export type Database = {
           category: string
           deleted: boolean
           episode: number
+          extension: string
           hidden: boolean
           id: string
           kind: string
@@ -153,6 +154,7 @@ export type Database = {
           category?: string
           deleted?: boolean
           episode?: number
+          extension?: string
           hidden?: boolean
           id?: string
           kind: string
@@ -167,6 +169,7 @@ export type Database = {
           category?: string
           deleted?: boolean
           episode?: number
+          extension?: string
           hidden?: boolean
           id?: string
           kind?: string
@@ -201,6 +204,10 @@ export type Database = {
       }
       save_site_design: {
         Args: { expected_revision: number; payload: Json; publish?: boolean }
+        Returns: number
+      }
+      save_xtream_connection: {
+        Args: { ciphertext: string; expected_revision: number }
         Returns: number
       }
       sync_xtream_items: {

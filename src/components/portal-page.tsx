@@ -45,7 +45,6 @@ import { DesignElements, useSiteDesign } from "@/components/site-design-provider
 import { InstallAppButton } from "@/components/install-app-button";
 import { LivePlayer } from "@/components/live-player";
 import { Button } from "@/components/ui/button";
-import { searchChannelsWithAi } from "@/lib/channel-search.functions";
 import { type Channel, type ChannelCategory } from "@/lib/channels";
 
 const seedSections: {
@@ -99,7 +98,6 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
     const found = id && channels.find((c) => c.id === id);
     if (found) { setSelectedId(found.id); document.getElementById("player")?.scrollIntoView({ behavior: "smooth" }); }
   }, [channels]);
-  const searchWithAi = useServerFn(searchChannelsWithAi);
   const navigate = useNavigate();
   function goBack() {
     if (window.history.length > 1) window.history.back();
@@ -124,12 +122,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
     setSearchError("");
     setSearchResultIds(null);
     try {
-      const result = await searchWithAi({
-        data: {
-          query,
-        },
-      });
-      setSearchResultIds(result.ids);
+      setSearchResultIds(channels.filter(c => `${c.name} ${c.description}`.includes(query)).map(c => c.id));
     } catch (error) {
       setSearchError(error instanceof Error ? error.message : "تعذّر إكمال البحث الذكي.");
     } finally {
@@ -237,9 +230,9 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
               <Settings className="h-5 w-5" />
               الإعدادات
             </button>
-            <Link to="/chat" className="tpl-top-btn" aria-label="حسابي" title="حسابي">
+            <Link to="/subscription" className="tpl-top-btn" aria-label="اشتراكي" title="اشتراكي">
               <User className="h-5 w-5" />
-              حسابي
+              اشتراكي
             </Link>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -271,7 +264,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
             <form onSubmit={handleSearch} className="ai-search-panel">
               <div className="mb-3 flex items-center gap-2 text-sm font-black text-sky">
                 <WandSparkles className="h-4 w-4" />
-                بحث ذكي في القنوات المتاحة
+                بحث في القنوات المتاحة
               </div>
               <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                 <label className="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-background/60 px-4 py-3 focus-within:border-sky">
@@ -288,7 +281,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
                 </label>
                 <Button type="submit" size="lg" disabled={searching} className="h-12 bg-sky px-6 text-accent-foreground hover:bg-sky/90">
                   {searching ? <span className="ai-search-spinner" /> : <WandSparkles />}
-                  {searching ? "جارٍ البحث" : "ابحث بالذكاء الاصطناعي"}
+                  {searching ? "جارٍ البحث" : "بحث"}
                 </Button>
               </div>
 
@@ -336,7 +329,7 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
               width={1024}
               height={768}
               fetchPriority="high"
-              className={isHome ? "mx-auto h-40 w-auto max-w-full object-contain sm:h-48" : "mx-auto h-24 w-auto max-w-full object-contain sm:h-36"}
+              className={isHome ? "mx-auto h-40 w-auto max-w-full object-contain sm:h-48 landscape:max-h-[18dvh]" : "mx-auto h-24 w-auto max-w-full object-contain sm:h-36"}
             />
             {!isHome && selected && <div className="relative mt-3 sm:mt-5">
               <img
@@ -377,14 +370,14 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
 
         {isHome && <section className="mx-auto max-w-3xl px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8" aria-label="الأقسام الرئيسية">
           <div data-design="cards" className="grid grid-cols-3 gap-3 sm:gap-5">
-            {mainCards.filter((card) => !("params" in card) || sections.some((s) => s.slug === card.params?.section)).map((card) => (
+            {mainCards.map((card) => (
               <Link
                 key={card.title}
                 to={card.to}
                 {...("params" in card ? { params: card.params } : {})}
                 className="tpl-card"
               >
-                <span className="block aspect-[3/4] overflow-hidden">
+                <span className="block aspect-[3/4] overflow-hidden landscape:h-[34dvh] landscape:aspect-auto">
                   <img
                     src={design.images[card.to === "/movies" ? "movies" : card.to === "/live" ? "live" : "series"] || card.img}
                     alt={card.title}
@@ -394,9 +387,9 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
                     className="h-full w-full object-cover"
                   />
                 </span>
-                <span className="grid min-h-20 place-items-center content-center gap-1.5 px-1 py-3">
+                <span className="grid min-h-20 place-items-center content-center gap-1.5 px-1 py-3 landscape:min-h-8 landscape:py-1">
                   <span className="gold-title text-center font-display text-xs font-black leading-5 sm:text-xl">{design.labels[card.to === "/movies" ? "movies" : card.to === "/live" ? "live" : "series"]}</span>
-                  <span className="grid h-7 w-7 place-items-center rounded-full border border-accent text-accent">
+                  <span className="grid h-7 w-7 place-items-center rounded-full border border-accent text-accent landscape:hidden">
                     <ChevronLeft className="h-4 w-4" />
                   </span>
                 </span>
@@ -594,8 +587,8 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
               <Link to="/quran" className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary">
                 <Sparkles className="h-4 w-4 text-sky" /> القرآن الكريم
               </Link>
-              <Link to="/chat" className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary">
-                <MessageCircle className="h-4 w-4 text-sky" /> المحادثة
+              <Link to="/subscription" className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-secondary">
+                <Tv className="h-4 w-4 text-sky" /> اشتراكي
               </Link>
               <p className="mt-4 border-t border-border px-3 pt-4 text-xs font-black text-muted-foreground">الأقسام</p>
               {sections.map((s) => (
@@ -636,12 +629,6 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
         </div>
       )}
 
-      <Link
-        to="/chat"
-        className="fixed bottom-6 left-4 z-40 hidden items-center gap-2 rounded-full border border-primary/70 bg-gradient-to-l from-primary to-primary/80 px-4 py-3 font-display text-sm font-black text-primary-foreground shadow-live transition-transform hover:-translate-y-0.5 md:flex"
-      >
-        <MessageCircle className="h-5 w-5" />ALMOGHANI AI
-      </Link>
       <DesignElements />
       <AppBottomNav />
     </div>
