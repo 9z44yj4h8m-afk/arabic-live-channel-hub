@@ -78,7 +78,13 @@ export function PortalPage({ section, view = "live" }: { section?: string; view?
   const { data: catalogSections } = useSuspenseQuery(catalogSectionsQuery);
   const sections = catalogSections.filter((s) => !s.deleted).map((s) => ({ ...s, title: design.labels[s.slug === "movies" ? "movieChannels" : s.slug as keyof typeof design.labels] || s.title, icon: seedSections.find((b) => b.slug === s.slug)?.icon ?? Tv, cols: "sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6" }));
   const isHome = view === "home";
-  const visibleSections = isHome ? [] : section ? sections.filter((s) => s.slug === section || catalogSections.find((r) => r.slug === section && r.deleted) && s.slug === "general") : sections.filter((s) => s.slug !== "series" && s.slug !== "movies");
+  let resolvedSection = section;
+  for (let i = 0; i < catalogSections.length; i++) {
+    const old = catalogSections.find((r) => r.slug === resolvedSection && r.deleted);
+    if (!old) break;
+    resolvedSection = old.redirectTo;
+  }
+  const visibleSections = isHome ? [] : section ? sections.filter((s) => s.slug === resolvedSection) : sections.filter((s) => s.slug !== "series" && s.slug !== "movies");
   const [selectedId, setSelectedId] = useState<string | undefined>();
   const selected = channels.find((c) => c.id === selectedId) ?? channels.find((c) => c.category === visibleSections[0]?.category) ?? channels[0];
   const [searchOpen, setSearchOpen] = useState(false);

@@ -24,7 +24,8 @@ export function CategoryLabelsEditor() {
     setMessage(null);
     const parsed = categoryLabelInput.safeParse({ key, label: value });
     if (!parsed.success) return setMessage({ ok: false, text: parsed.error.issues[0]?.message ?? "اسم غير صالح" });
-    try { assertUniqueLabel(labels.data!, key, parsed.data.label); } catch (e) { return setMessage({ ok: false, text: (e as Error).message }); }
+    if (!labels.data) return;
+    try { assertUniqueLabel(labels.data, key, parsed.data.label); } catch (e) { return setMessage({ ok: false, text: (e as Error).message }); }
     setBusy(true);
     try {
       const next = await save({ data: parsed.data });

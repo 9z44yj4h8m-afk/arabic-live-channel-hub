@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { CatalogEntry } from "./channel-catalog";
 
 export const sectionNameSchema = z.string().transform((v) => v.replace(/\s+/g, " ").trim()).pipe(z.string().min(1, "اسم القسم مطلوب").max(40).regex(/^[^<>{}`\\]+$/, "اسم غير صالح"));
-export const catalogSectionSchema = z.object({ slug: z.string().regex(/^[a-z0-9_-]+$/).max(80), category: z.string().min(1).max(80), title: sectionNameSchema, deleted: z.boolean() });
+export const catalogSectionSchema = z.object({ slug: z.string().regex(/^[a-z0-9_-]+$/).max(80), category: z.string().min(1).max(80), title: sectionNameSchema, deleted: z.boolean(), redirectTo: z.string().regex(/^[a-z0-9_-]+$/).max(80).optional() });
 export type CatalogSection = z.infer<typeof catalogSectionSchema>;
 export const sectionsSchema = z.array(catalogSectionSchema).min(1).max(100).superRefine((rows, ctx) => {
   for (const field of ["slug", "category"] as const) if (new Set(rows.map((s) => s[field])).size !== rows.length) ctx.addIssue({ code: "custom", message: "قسم مكرر" });
@@ -26,7 +26,7 @@ export function removeSection(sections: CatalogSection[], entries: CatalogEntry[
   const source = sections.find((s) => s.slug === slug && !s.deleted);
   const target = sections.find((s) => s.category === destination && !s.deleted && s.slug !== slug);
   if (!source || !target) throw new Error("اختر قسمًا آخر لنقل القنوات إليه");
-  return { sections: sectionsSchema.parse(sections.map((s) => s.slug === slug ? { ...s, deleted: true } : s)), entries: entries.map((e) => e.channel.category === source.category ? { ...e, channel: { ...e.channel, category: target.category } } : e) };
+  return { sections: sectionsSchema.parse(sections.map((s) => s.slug === slug ? { ...s, deleted: true, redirectTo: target.slug } : s)), entries: entries.map((e) => e.channel.category === source.category ? { ...e, channel: { ...e.channel, category: target.category } } : e) };
 }
 export function editChannel(entries: CatalogEntry[], id: string, name: string, category: string) {
   const validName = z.string().trim().min(1, "اسم القناة مطلوب").max(120).regex(/^[^<>{}`\\]+$/, "اسم غير صالح").parse(name);
