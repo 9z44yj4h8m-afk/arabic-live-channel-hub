@@ -92,6 +92,72 @@ export type Database = {
         }
         Relationships: []
       }
+      xtream_connections: {
+        Row: {
+          encrypted_credentials: string
+          id: number
+          revision: number
+          updated_at: string
+        }
+        Insert: {
+          encrypted_credentials: string
+          id?: number
+          revision?: number
+          updated_at?: string
+        }
+        Update: {
+          encrypted_credentials?: string
+          id?: number
+          revision?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      xtream_items: {
+        Row: {
+          category: string
+          deleted: boolean
+          episode: number
+          hidden: boolean
+          id: string
+          kind: string
+          name: string
+          parent_id: string
+          position: number
+          remote_id: string
+          season: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          deleted?: boolean
+          episode?: number
+          hidden?: boolean
+          id?: string
+          kind: string
+          name: string
+          parent_id?: string
+          position?: number
+          remote_id: string
+          season?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          deleted?: boolean
+          episode?: number
+          hidden?: boolean
+          id?: string
+          kind?: string
+          name?: string
+          parent_id?: string
+          position?: number
+          remote_id?: string
+          season?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -110,6 +176,15 @@ export type Database = {
       }
       save_site_design: {
         Args: { expected_revision: number; payload: Json; publish?: boolean }
+        Returns: number
+      }
+      sync_xtream_items: {
+        Args: {
+          expected_revision: number
+          payload: Json
+          target_kind: string
+          target_parent: string
+        }
         Returns: number
       }
     }

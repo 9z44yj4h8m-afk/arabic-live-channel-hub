@@ -36,6 +36,13 @@
       "when": 1793401006122,
       "tag": "0004_site_design_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793406311690,
+      "tag": "0005_secure_xtream_library",
+      "breakpoints": true
     }
   ]
 }
