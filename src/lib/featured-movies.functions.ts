@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { movies as fallback, type Movie } from "./movies";
+import { requireSiteSession } from "./site-gate.server";
 
 // Official channels that upload full movies. New uploads appear automatically.
 const SOURCES = [
@@ -71,6 +72,7 @@ async function fromChannel(handle: string, name: string): Promise<Movie[]> {
 }
 
 export const getFeaturedMovies = createServerFn({ method: "GET" }).handler(async () => {
+  await requireSiteSession();
   if (cache && Date.now() - cache.at < TTL) return cache.list;
   try {
     const lists = await Promise.all(SOURCES.map((s) => fromChannel(s.handle, s.name).catch(() => [])));

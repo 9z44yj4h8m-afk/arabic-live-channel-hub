@@ -1,5 +1,8 @@
-import { ArrowRight, Clock, Heart, Home, LayoutGrid, Search } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { ArrowRight, Clock, Heart, Home, LayoutGrid, Search, LockKeyhole, Tv } from "lucide-react";
+import { Link, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { Button } from "@/components/ui/button";
+import { lockSite } from "@/lib/site-gate.functions";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 export type BrowserItem = { id: string; name: string; thumb?: string; subtitle?: string; group: string };
@@ -25,6 +28,8 @@ export function IptvBrowser<T extends BrowserItem>({
   onBack: () => void;
   renderPlayer: (item: T) => ReactNode;
 }) {
+  const router = useRouter();
+  const lock = useServerFn(lockSite);
   const [group, setGroup] = useState("__all");
   const [catQuery, setCatQuery] = useState("");
   const [query, setQuery] = useState("");
@@ -104,6 +109,8 @@ export function IptvBrowser<T extends BrowserItem>({
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="بحث" aria-label="بحث في القائمة" className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
         </label>
         <nav className="flex shrink-0 items-center gap-1.5" aria-label="التنقل">
+          <Link to="/subscription" className="iptv-icon" aria-label="اشتراكي" title="اشتراكي"><Tv className="h-4 w-4" /></Link>
+          <Button size="icon" variant="ghost" aria-label="قفل التطبيق" title="قفل التطبيق" onClick={async () => { await lock(); router.options.context.queryClient.clear(); await router.navigate({ to: "/unlock" }); }}><LockKeyhole className="h-4 w-4" /></Button>
           <Link to="/" className="iptv-icon" aria-label="الرئيسية"><Home className="h-4 w-4" /></Link>
           <Link to="/live" className="iptv-icon" aria-label="البث المباشر"><LayoutGrid className="h-4 w-4" /></Link>
         </nav>

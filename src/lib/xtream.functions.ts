@@ -43,3 +43,11 @@ export const getSubscriptionItems = createServerFn({ method: "GET" }).inputValid
     if (error) throw new Error("تعذّر تحميل محتوى الاشتراك"); rows.push(...page); if (page.length < 1000) break;
   } return rows;
 });
+export const getAdminSeries = createServerFn({ method: "POST" }).handler(async () => {
+  await requireAdminSession(); const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const rows: { remote_id: string }[] = [];
+  for (let offset = 0; offset < 20000; offset += 1000) {
+    const { data, error } = await supabaseAdmin.from("xtream_items").select("remote_id").eq("kind", "series").eq("deleted", false).order("position").order("id").range(offset, offset + 999);
+    if (error) throw new Error("تعذّر تحميل المسلسلات"); rows.push(...data); if (data.length < 1000) break;
+  } return rows;
+});
