@@ -1,7 +1,7 @@
 import { z } from "zod";
 export const credentialsSchema = z.object({ server: z.string().url().max(1000).transform(value => {
   const url = new URL(value);
-  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || url.pathname !== "/" || !url.hostname.includes(".") || /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.|\[)/i.test(url.hostname) || /\.(local|internal)$/.test(url.hostname)) throw new Error("استخدم عنوان خادم HTTPS عامًا فقط");
+  if (!["https:", "http:"].includes(url.protocol) || url.username || url.password || url.search || url.hash || !/^\/?$/.test(url.pathname) || !url.hostname.includes(".") || /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.|\[)/i.test(url.hostname) || /\.(local|internal)$/.test(url.hostname)) throw new Error("استخدم عنوان خادم عامًا صحيحًا مثل http://server.com:8080");
   return url.origin;
 }), username: z.string().trim().min(1).max(200), password: z.string().min(1).max(200) });
 export type Credentials = z.infer<typeof credentialsSchema>;
