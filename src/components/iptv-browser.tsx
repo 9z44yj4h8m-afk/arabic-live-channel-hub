@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, Heart, Home, LayoutGrid, Search, Tv } from "lucide-react";
+import { ArrowRight, Clock, Globe, Heart, Home, LayoutGrid, Play, Search, Tv } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { channelDisplayName } from "@/lib/channel-names";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
@@ -6,8 +6,9 @@ import { type ReactNode, useEffect, useMemo, useState } from "react";
 export type BrowserItem = { id: string; name: string; thumb?: string; subtitle?: string; group: string };
 
 /**
- * Landscape IPTV-style browser: categories | numbered list | player.
- * In portrait it stacks (player first) so phones held upright still work.
+ * Landscape IPTV browser matching the "Broadcast Atlas" style:
+ * a list panel (title, filter pills, logo rows) beside a large player
+ * with a channel overlay. In portrait it stacks (player first).
  */
 export function IptvBrowser<T extends BrowserItem>({
   title,
@@ -27,7 +28,6 @@ export function IptvBrowser<T extends BrowserItem>({
   renderPlayer: (item: T) => ReactNode;
 }) {
   const [group, setGroup] = useState("__all");
-  const [catQuery, setCatQuery] = useState("");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | undefined>(initialId);
   const [favs, setFavs] = useState<string[]>([]);
@@ -69,14 +69,13 @@ export function IptvBrowser<T extends BrowserItem>({
     persist("favs", next);
   }
 
-  const cats = useMemo(
+  const pills = useMemo(
     () => [
-      { key: "__all", label: "الكل", count: items.length },
-      { key: "__recent", label: "شوهد مؤخراً", count: recent.filter((id) => items.some((i) => i.id === id)).length },
-      { key: "__favs", label: "المفضلة", count: favs.filter((id) => items.some((i) => i.id === id)).length },
-      ...groups.map((g) => ({ key: g, label: g, count: items.filter((i) => i.group === g).length })),
+      { key: "__all", label: "الكل", icon: Globe, count: items.length },
+      { key: "__favs", label: "المفضلة", icon: Heart, count: favs.filter((id) => items.some((i) => i.id === id)).length },
+      { key: "__recent", label: "شوهد مؤخراً", icon: Clock, count: recent.filter((id) => items.some((i) => i.id === id)).length },
     ],
-    [items, groups, favs, recent],
+    [items, favs, recent],
   );
 
   const list = useMemo(() => {
@@ -89,20 +88,16 @@ export function IptvBrowser<T extends BrowserItem>({
     return q ? base.filter((i) => i.name.includes(q)) : base;
   }, [items, group, favs, recent, query]);
 
-  const shownCats = cats.filter((c) => !catQuery.trim() || c.label.includes(catQuery.trim()));
-
   return (
     <div dir="rtl" className="iptv-shell flex min-h-dvh flex-col text-foreground landscape:h-dvh landscape:overflow-hidden">
-      <header className="iptv-bar grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-2 py-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <button type="button" onClick={onBack} className="iptv-icon" aria-label="رجوع">
-            <ArrowRight className="h-5 w-5" />
-          </button>
-          <h1 className="truncate font-display text-sm font-black sm:text-lg">{title}</h1>
-        </div>
+      {/* Slim navigation bar */}
+      <header className="iptv-bar grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-2 py-1.5">
+        <button type="button" onClick={onBack} className="iptv-icon" aria-label="رجوع">
+          <ArrowRight className="h-5 w-5" />
+        </button>
         <label className="iptv-search mx-auto w-full max-w-md">
           <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="بحث" aria-label="بحث في القائمة" className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="بحث عن قناة" aria-label="بحث في القائمة" className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
         </label>
         <nav className="flex shrink-0 items-center gap-1.5" aria-label="التنقل">
           <Link to="/subscription" className="iptv-icon" aria-label="اشتراكي" title="اشتراكي"><Tv className="h-4 w-4" /></Link>
@@ -111,63 +106,127 @@ export function IptvBrowser<T extends BrowserItem>({
         </nav>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-2 p-2 landscape:grid-cols-[minmax(120px,17%)_minmax(0,1fr)_minmax(0,50%)] portrait:grid-cols-1 md:landscape:grid-cols-[minmax(140px,18%)_minmax(0,1fr)_minmax(0,50%)]">
-        {/* Player column (last in landscape = leftmost in RTL, first on portrait) */}
-        <section className="iptv-panel flex min-h-0 flex-col gap-2 p-2 portrait:order-first landscape:order-3 md:order-3" aria-label="المشغل">
-          <div className="overflow-hidden rounded-lg bg-surface-deep">{selected ? renderPlayer(selected) : null}</div>
+      <div className="grid min-h-0 flex-1 gap-2 p-2 portrait:grid-cols-1 landscape:grid-cols-[minmax(280px,38%)_minmax(0,1fr)] md:landscape:grid-cols-[minmax(320px,40%)_minmax(0,1fr)]">
+        {/* Player pane (second in RTL = left side, first on portrait) */}
+        <section className="iptv-panel relative flex min-h-0 flex-col overflow-hidden portrait:order-first landscape:order-2" aria-label="المشغل">
+          <div className="grid min-h-0 flex-1 place-items-center bg-surface-deep">
+            {selected ? <div className="w-full">{renderPlayer(selected)}</div> : null}
+          </div>
           {selected && (
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 px-1">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-black">{channelDisplayName(selected.name)}</p>
-                {selected.subtitle && <p className="line-clamp-2 text-xs text-muted-foreground">{selected.subtitle}</p>}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-background/95 via-background/60 to-transparent p-3 pt-10">
+              <div className="flex min-w-0 items-center gap-3">
+                {selected.thumb ? (
+                  <img src={selected.thumb} alt="" loading="lazy" decoding="async" className="h-14 w-14 shrink-0 rounded-lg bg-primary-foreground object-contain p-1" />
+                ) : (
+                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-secondary"><Tv className="h-6 w-6 text-muted-foreground" /></span>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-xl font-black">{channelDisplayName(selected.name)}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {[selected.group, selected.subtitle].filter(Boolean).join(" • ")}
+                  </p>
+                </div>
               </div>
-              <button type="button" onClick={() => toggleFav(selected.id)} className="iptv-icon" aria-label={favs.includes(selected.id) ? "إزالة من المفضلة" : "إضافة للمفضلة"} aria-pressed={favs.includes(selected.id)}>
+              <button type="button" onClick={() => toggleFav(selected.id)} className="iptv-icon pointer-events-auto" aria-label={favs.includes(selected.id) ? "إزالة من المفضلة" : "إضافة للمفضلة"} aria-pressed={favs.includes(selected.id)}>
                 <Heart className={`h-4 w-4 ${favs.includes(selected.id) ? "fill-current text-live" : ""}`} />
               </button>
             </div>
           )}
-          <div className="mt-auto hidden items-center gap-4 border-t border-border/60 px-1 pt-2 text-[11px] font-bold text-muted-foreground landscape:flex md:flex">
-            <span className="flex items-center gap-1"><Heart className="h-3.5 w-3.5" />المفضلة <span className="h-1 w-5 rounded bg-live" /></span>
-            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />شوهد مؤخراً <span className="h-1 w-5 rounded bg-sky" /></span>
-          </div>
         </section>
 
-        {/* Categories */}
-        <aside className="iptv-panel flex min-h-0 flex-col gap-1.5 p-2 landscape:order-1 md:order-1" aria-label="التصنيفات">
-          <input value={catQuery} onChange={(e) => setCatQuery(e.target.value)} placeholder="بحث في التصنيفات" aria-label="بحث في التصنيفات" className="iptv-cat-search bg-transparent outline-none placeholder:text-muted-foreground" />
-          <div className="flex min-h-0 gap-1.5 overflow-auto portrait:flex-row landscape:flex-col md:flex-col [scrollbar-width:thin]">
-            {shownCats.map((c) => (
-              <button key={c.key} type="button" onClick={() => setGroup(c.key)} className={`iptv-row shrink-0 justify-between text-xs ${group === c.key ? "iptv-row-active" : ""}`}>
-                <span className="truncate">{c.label}</span>
-                <span className="shrink-0 tabular-nums opacity-80">{c.count}</span>
+        {/* List panel */}
+        <aside className="iptv-panel flex min-h-0 flex-col gap-2 p-3 landscape:order-1" aria-label="قائمة القنوات">
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-accent/50 bg-accent/15">
+              <Tv className="h-5 w-5 text-accent" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="truncate font-display text-lg font-black leading-tight">{title}</h1>
+              <p className="truncate text-xs font-bold text-muted-foreground">ALMOGHANI IPTV</p>
+            </div>
+          </div>
+
+          <p className="text-[11px] font-bold leading-relaxed text-muted-foreground">
+            اختر قناة من القائمة للتشغيل · ★ للمفضلة · ابحث بالاسم من الأعلى
+          </p>
+
+          {/* Filter pills */}
+          <div className="grid grid-cols-3 gap-1.5">
+            {pills.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => setGroup(p.key)}
+                aria-pressed={group === p.key}
+                className={`flex min-w-0 items-center justify-center gap-1.5 rounded-full border px-2 py-1.5 text-xs font-black transition-colors ${
+                  group === p.key
+                    ? "border-accent bg-accent/15 text-accent"
+                    : "border-border bg-secondary/70 text-foreground"
+                }`}
+              >
+                <p.icon className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{p.label}</span>
               </button>
             ))}
           </div>
-        </aside>
 
-        {/* Numbered list */}
-        <section className="iptv-panel min-h-0 overflow-y-auto p-2 landscape:order-2 md:order-2 [scrollbar-width:thin]" aria-label="القائمة">
-          {list.length ? (
-            <ol className="grid gap-1.5">
-              {list.map((item, i) => (
-                <li key={item.id} style={{ contentVisibility: "auto", containIntrinsicSize: "auto 52px" }}>
-                  <button type="button" onClick={() => select(item)} className={`iptv-row w-full ${selected?.id === item.id ? "iptv-row-active" : ""}`}>
-                    <span className="w-7 shrink-0 text-center text-base font-black tabular-nums">{i + 1}</span>
-                    {item.thumb ? (
-                      <img src={item.thumb} alt="" loading="lazy" decoding="async" className="h-8 w-12 shrink-0 rounded bg-surface-deep object-contain" />
-                    ) : (
-                      <span className="h-8 w-12 shrink-0 rounded bg-surface-deep" />
-                    )}
-                    <span className="min-w-0 truncate text-right text-sm font-bold">{channelDisplayName(item.name)}</span>
-                    {favs.includes(item.id) && <Heart className="h-3.5 w-3.5 shrink-0 fill-current text-live" />}
-                  </button>
-                </li>
+          {/* Group chips */}
+          {groups.length > 1 && (
+            <div className="flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:thin]" aria-label="التصنيفات">
+              {groups.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setGroup(g)}
+                  aria-pressed={group === g}
+                  className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-black transition-colors ${
+                    group === g ? "border-accent bg-accent/15 text-accent" : "border-border bg-secondary/70"
+                  }`}
+                >
+                  {g}
+                </button>
               ))}
-            </ol>
-          ) : (
-            <p className="p-4 text-center text-sm font-bold text-muted-foreground">لا يوجد محتوى هنا بعد.</p>
+            </div>
           )}
-        </section>
+
+          {/* Channel rows */}
+          <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin]" aria-label="القنوات">
+            {list.length ? (
+              <ol className="grid gap-1.5 pe-0.5">
+                {list.map((item) => {
+                  const active = selected?.id === item.id;
+                  return (
+                    <li key={item.id} style={{ contentVisibility: "auto", containIntrinsicSize: "auto 60px" }}>
+                      <button
+                        type="button"
+                        onClick={() => select(item)}
+                        className={`flex w-full items-center gap-2.5 rounded-xl border p-1.5 text-right transition-colors ${
+                          active ? "border-accent bg-accent/15" : "border-transparent hover:border-border hover:bg-secondary/60"
+                        }`}
+                      >
+                        {item.thumb ? (
+                          <img src={item.thumb} alt="" loading="lazy" decoding="async" className="h-11 w-11 shrink-0 rounded-lg bg-primary-foreground object-contain p-0.5" />
+                        ) : (
+                          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-secondary"><Tv className="h-5 w-5 text-muted-foreground" /></span>
+                        )}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-black">{channelDisplayName(item.name)}</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {[item.group, item.subtitle].filter(Boolean).join(" • ")}
+                          </span>
+                        </span>
+                        {favs.includes(item.id) && <Heart className="h-3.5 w-3.5 shrink-0 fill-current text-live" />}
+                        {active && <Play className="h-4 w-4 shrink-0 fill-current text-accent" />}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            ) : (
+              <p className="p-4 text-center text-sm font-bold text-muted-foreground">لا يوجد محتوى هنا بعد.</p>
+            )}
+          </div>
+        </aside>
       </div>
     </div>
   );
