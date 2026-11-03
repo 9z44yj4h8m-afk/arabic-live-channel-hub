@@ -173,6 +173,7 @@ function PortalContent({ section, view, channels }: { section?: string | undefin
   }
 
   const previewMode = false;
+  const [shownCount, setShownCount] = useState(60);
 
   if (!isHome) {
     const groupTitles = visibleSections.map((s) => design.labels[s.slug === "movies" ? "movieChannels" : s.slug as keyof typeof design.labels] || s.title);
@@ -471,7 +472,7 @@ function PortalContent({ section, view, channels }: { section?: string | undefin
           </div>
           {visibleSections.map((section, index) => {
             const sectionChannels = channels.filter((channel) => channel.category === section.category);
-            const previewChannels = previewMode ? sectionChannels.slice(0, 8) : sectionChannels;
+            const previewChannels = sectionChannels.slice(0, previewMode ? 8 : shownCount);
             const hiddenCount = sectionChannels.length - previewChannels.length;
             return (
               <section id={`section-${section.slug}`} key={section.title} className="scroll-mt-28 border-t border-border/60 pt-9 first:border-t-0 first:pt-0 sm:pt-12">
@@ -556,7 +557,13 @@ function PortalContent({ section, view, channels }: { section?: string | undefin
                       </button>
                      ))}
                     </div>
-                    {hiddenCount > 0 && (
+                    {hiddenCount > 0 && !previewMode && (
+                      <button type="button" onClick={() => setShownCount((n) => n + 60)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-sm font-black text-sky">
+                        <ListVideo className="h-4 w-4" />
+                        عرض المزيد ({hiddenCount})
+                      </button>
+                    )}
+                    {hiddenCount > 0 && previewMode && (
                       <Link
                         to="/channels/$section"
                         params={{ section: section.slug }}
