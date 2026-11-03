@@ -336,7 +336,7 @@ function PortalContent({ section, view, channels }: { section?: string | undefin
               width={1024}
               height={768}
               fetchPriority="high"
-              className={isHome ? "mx-auto h-40 w-auto max-w-full object-contain sm:h-48 landscape:max-h-[18dvh]" : "mx-auto h-24 w-auto max-w-full object-contain sm:h-36"}
+              className={isHome ? "mx-auto h-32 w-auto max-w-full object-contain sm:h-44 landscape:max-h-[14dvh]" : "mx-auto h-24 w-auto max-w-full object-contain sm:h-36"}
             />
             {!isHome && selected && <div className="relative mt-3 sm:mt-5">
               <img
@@ -375,7 +375,17 @@ function PortalContent({ section, view, channels }: { section?: string | undefin
           </div>
         </section>
 
-        {isHome && <section className="mx-auto max-w-3xl px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8" aria-label="الأقسام الرئيسية">
+        {isHome && <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 landscape:grid landscape:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] landscape:items-center landscape:gap-6">
+          <Link to="/live" aria-label="افتح البث المباشر" className="relative mt-5 block landscape:mt-3">
+            <img data-design="wolf" src={design.images.wolf || tplWolf} alt="" width={768} height={1024} loading="lazy" aria-hidden="true" className="pointer-events-none absolute -bottom-3 -right-2 z-10 w-20 sm:w-32 landscape:w-[22%]" />
+            <span className="tpl-frame block overflow-hidden animate-fade-up">
+              <span className="absolute left-3 top-3 z-10 live-badge px-3 py-1 text-[11px]">
+                <span className="h-2 w-2 animate-live-pulse rounded-full bg-live-foreground" />LIVE
+              </span>
+              <img src={design.images.live || tplCardLive} alt="البث المباشر" width={768} height={1024} className="aspect-video w-full object-cover landscape:max-h-[52dvh]" />
+            </span>
+          </Link>
+        <section className="mx-auto max-w-3xl pt-6 sm:pt-8 landscape:w-full landscape:pt-3" aria-label="الأقسام الرئيسية">
           <div data-design="cards" className="grid grid-cols-3 gap-3 sm:gap-5">
             {mainCards.map((card) => (
               <Link
@@ -410,7 +420,8 @@ function PortalContent({ section, view, channels }: { section?: string | undefin
               <ChevronLeft className="h-5 w-5" />
             </Link>
           </Button>
-        </section>}
+        </section>
+        </div>}
 
         {!isHome && <div id="channels" className="mx-auto max-w-7xl space-y-8 px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
           {inactiveChannels.length > 0 && (
