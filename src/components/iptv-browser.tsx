@@ -10,7 +10,7 @@ import logo from "@/assets/tpl-logo.png";
 export type BrowserItem = { id: string; name: string; thumb?: string; subtitle?: string; group: string };
 
 export function IptvBrowser<T extends BrowserItem>({ title, items, groups, storageKey, initialId, onBack, renderPlayer }: {
-  title: string; items: T[]; groups: string[]; storageKey: string; initialId?: string; onBack: () => void; renderPlayer: (item: T) => ReactNode;
+  title: string; items: T[]; groups: string[]; storageKey: string; initialId?: string | undefined; onBack: () => void; renderPlayer: (item: T) => ReactNode;
 }) {
   const design = useSiteDesign();
   const [group, setGroup] = useState("__all");
