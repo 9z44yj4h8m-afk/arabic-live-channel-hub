@@ -482,7 +482,7 @@
 @media (orientation: landscape) and (max-height: 600px) {
   .gold-layout { padding: 7px; gap: 10px; grid-template-columns: 72px minmax(0,0.94fr) minmax(0,1.06fr); }
   .gold-nav { padding: 5px; gap: 5px; border-radius: 16px; }
-  .gold-nav-link { min-height: 0; padding: 3px 1px; font-size: 10px; gap: 2px; border-radius: 12px; }
+  .gold-nav-link { height: 100%; min-height: 0; padding: 3px 1px; font-size: 10px; gap: 2px; border-radius: 12px; }
   .gold-nav-link svg { height: 22px; width: 22px; }
   .gold-heading { padding: 0; }
   .gold-heading h1 { font-size: 24px; }
@@ -522,4 +522,19 @@
   .gold-channel-scroll { max-height: 500px; }
   .gold-brand-stage { min-height: 220px; }
   .gold-brand-stage img { max-height: 240px; }
+}
+@media (min-width: 1000px) {
+  .gold-layout { grid-template-columns: 110px minmax(0,0.92fr) minmax(0,1.08fr); padding: 20px; gap: 20px; }
+  .gold-home { min-height: 0; height: auto; }
+  .gold-home-brand { grid-row: auto; height: 650px; }
+  .gold-home-content { grid-row: auto; }
+  .gold-nav-rail { position: static; height: auto; grid-template-columns: 1fr; grid-template-rows: repeat(6,minmax(0,1fr)); gap: 8px; padding: 8px; }
+  .gold-nav-link { height: 100%; font-size: 14px; }
+  .gold-nav-link svg { width: 32px; height: 32px; }
+  .gold-heading h1 { font-size: 36px; }
+  .gold-brand-stage img { max-height: 380px; }
+  .gold-browser { height: 100dvh; overflow: hidden; }
+  .gold-channel-pane, .gold-viewer { grid-row: auto; }
+  .gold-player-stage { aspect-ratio: auto; }
+  .gold-channel-scroll { max-height: none; }
 }
