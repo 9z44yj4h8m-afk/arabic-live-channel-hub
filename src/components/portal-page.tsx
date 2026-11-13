@@ -40,6 +40,7 @@ import tplCardLive from "@/assets/tpl-card-live.jpg";
 import tplCardSeries from "@/assets/tpl-card-series.jpg";
 import tplCardMovies from "@/assets/tpl-card-movies.jpg";
 import { AppBottomNav } from "@/components/app-bottom-nav";
+import { GoldHome } from "@/components/gold-home";
 import { IptvBrowser } from "@/components/iptv-browser";
 import { DesignElements, useSiteDesign } from "@/components/site-design-provider";
 import { InstallAppButton } from "@/components/install-app-button";
@@ -174,6 +175,8 @@ function PortalContent({ section, view, channels }: { section?: string | undefin
 
   const previewMode = false;
   const [shownCount, setShownCount] = useState(60);
+
+  if (isHome) return <GoldHome />;
 
   if (!isHome) {
     const groupTitles = visibleSections.map((s) => design.labels[s.slug === "movies" ? "movieChannels" : s.slug as keyof typeof design.labels] || s.title);
