@@ -32,18 +32,18 @@
 }
 
 :root {
-  --background: oklch(0.14 0.045 268);
+  --background: oklch(0.09 0 0);
   --foreground: oklch(0.96 0.015 95);
-  --surface: oklch(0.19 0.05 266);
-  --surface-deep: oklch(0.1 0.035 268);
-  --card: oklch(0.18 0.05 264);
+  --surface: oklch(0.17 0.004 240);
+  --surface-deep: oklch(0.06 0 0);
+  --card: oklch(0.18 0.004 240);
   --card-foreground: oklch(0.96 0.015 95);
   --primary: oklch(0.76 0.13 85);
   --primary-foreground: oklch(0.16 0.04 268);
-  --secondary: oklch(0.24 0.06 264);
+  --secondary: oklch(0.23 0.004 240);
   --secondary-foreground: oklch(0.93 0.02 95);
-  --muted: oklch(0.22 0.05 264);
-  --muted-foreground: oklch(0.72 0.04 250);
+  --muted: oklch(0.22 0.004 240);
+  --muted-foreground: oklch(0.76 0.015 95);
   --accent: oklch(0.8 0.13 85);
   --accent-foreground: oklch(0.16 0.03 268);
   --border: oklch(0.65 0.1 85 / 40%);
@@ -53,6 +53,14 @@
   --live-foreground: oklch(0.99 0.005 260);
   --signal: oklch(0.62 0.24 20);
   --sky: oklch(0.75 0.14 230);
+  --selection: oklch(0.84 0.28 140);
+  --selection-deep: oklch(0.25 0.09 140);
+  --selection-foreground: oklch(0.08 0.01 140);
+  --gold-highlight: oklch(0.97 0.05 95);
+  --gold-edge: oklch(0.48 0.1 80);
+  --metal-sheen: linear-gradient(165deg, var(--secondary), var(--surface-deep) 35%, var(--surface-deep) 75%, var(--surface));
+  --gold-border: linear-gradient(120deg, var(--gold-highlight), var(--gold-edge) 18%, var(--accent) 36%, var(--gold-highlight) 48%, var(--gold-edge) 72%, var(--accent));
+  --gold-shadow: inset 0 0 8px color-mix(in oklab, var(--accent) 40%, transparent), 0 0 5px color-mix(in oklab, var(--accent) 20%, transparent);
 }
 
 @layer base {
@@ -408,4 +416,110 @@
   border: 2px solid var(--accent);
   background: color-mix(in oklab, var(--accent) 16%, var(--secondary));
   color: var(--accent);
+}
+
+/* Gold Edition: shared home, viewing layout and navigation. */
+.gold-layout { min-height: 100dvh; padding: 12px; background: var(--background); color: var(--foreground); display: grid; grid-template-columns: 94px minmax(0, 0.92fr) minmax(0, 1.08fr); gap: 16px; }
+.gold-frame { border: 2px solid transparent; border-radius: 22px; background: linear-gradient(var(--surface-deep), var(--surface-deep)) padding-box, var(--gold-border) border-box; box-shadow: var(--gold-shadow); }
+.gold-control { position: relative; min-width: 0; height: 48px; border: 2px solid transparent; border-radius: 16px; background: var(--metal-sheen) padding-box, var(--gold-border) border-box; box-shadow: var(--gold-shadow); color: var(--foreground); font-weight: 800; }
+.gold-control::after { content: ""; position: absolute; inset-inline: 20%; bottom: -2px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold-highlight), var(--accent), transparent); pointer-events: none; }
+.gold-control:hover { color: var(--accent); filter: brightness(1.12); }
+.gold-control:focus-visible { outline: 2px solid var(--selection); outline-offset: 3px; }
+.gold-green { background: linear-gradient(125deg, var(--selection), var(--selection-deep) 28%, var(--selection-deep) 78%, var(--selection)) padding-box, linear-gradient(var(--gold-highlight), var(--selection)) border-box; color: var(--foreground); box-shadow: inset 0 0 12px var(--selection-deep); }
+.gold-green:hover { color: var(--foreground); }
+.gold-nav { border: 2px solid transparent; border-radius: 22px; padding: 8px; background: linear-gradient(var(--background), var(--background)) padding-box, var(--gold-border) border-box; display: grid; gap: 8px; }
+.gold-nav-rail { grid-column: 1; align-self: stretch; grid-template-rows: repeat(6, minmax(0,1fr)); }
+.gold-nav-link { width: 100%; height: 100%; min-height: 62px; flex-direction: column; gap: 5px; padding: 8px 2px; font-size: 12px; }
+.gold-nav-link svg { width: 28px; height: 28px; color: var(--accent); }
+.gold-nav-link[data-status="active"] { background: linear-gradient(150deg, var(--surface), color-mix(in oklab, var(--primary) 18%, var(--background))) padding-box, var(--gold-border) border-box; }
+.gold-nav-bottom { position: fixed; z-index: 50; bottom: 6px; inset-inline: 8px; grid-template-columns: repeat(6,minmax(0,1fr)); height: 76px; }
+.gold-heading { text-align: center; padding-block: 4px 10px; min-width: 0; }
+.gold-heading h1 { font-family: Arial, sans-serif; font-size: 36px; font-weight: 900; line-height: 1.15; background: var(--gold-border); background-clip: text; color: transparent; margin: 0; overflow-wrap: anywhere; }
+.gold-heading p { color: var(--accent); font-weight: 700; margin: 4px 0 10px; }
+.gold-heading h2 { font-size: 13px; color: var(--muted-foreground); margin: 0; }
+.gold-channel-pane { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.gold-list-toolbar { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.gold-list-toolbar .gold-control { padding-inline: 6px; font-size: 13px; }
+.gold-group-select { width: 100%; min-width: 0; height: 48px; color: var(--foreground); background: linear-gradient(110deg, var(--selection-deep), var(--background)); border: 2px solid var(--selection); border-radius: 14px; padding: 6px 12px; font-weight: 800; font-size: 14px; }
+.gold-group-select option { background: var(--background); color: var(--foreground); }
+.gold-search { display: flex; gap: 8px; align-items: center; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 8px; }
+.gold-search svg { width: 18px; flex-shrink: 0; }
+.gold-search input { width: 100%; min-width: 0; outline: none; background: transparent; }
+.gold-channel-scroll { overflow-y: auto; min-height: 0; flex: 1; scrollbar-width: thin; }
+.gold-channel-row { width: 100%; height: 66px; padding: 7px 12px; text-align: right; gap: 10px; }
+.gold-channel-logo { width: 43px; height: 43px; flex-shrink: 0; display: grid; place-items: center; border-radius: 10px; border: 1px solid var(--border); background: var(--secondary); }
+.gold-channel-logo img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 3px; }
+.gold-row-number { color: var(--accent); font-size: 12px; flex-shrink: 0; }
+.gold-viewer { display: flex; flex-direction: column; gap: 9px; min-width: 0; min-height: 0; padding: 10px; }
+.gold-player-stage { position: relative; overflow: hidden; flex: 1; min-height: 0; border: 2px solid transparent; border-radius: 16px; background: linear-gradient(var(--surface-deep), var(--surface-deep)) padding-box, var(--gold-border) border-box; display: grid; place-items: center; }
+.gold-player-logo { position: absolute; width: 78%; height: 82%; object-fit: contain; }
+.gold-player-media { position: relative; width: 100%; }
+.gold-player-media .player-shell { box-shadow: none; border: 0; border-radius: 0; }
+.gold-now { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 10px; padding-inline: 4px; font-size: 14px; font-weight: 800; }
+.gold-now .live-badge { font-size: 10px; padding: 4px 8px; }
+.gold-player-tools { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; }
+.gold-player-tools .gold-control { font-size: 10px; height: 54px; padding-inline: 3px; flex-direction: column; gap: 3px; }
+.gold-player-tools .gold-control svg { height: 22px; width: 22px; }
+.gold-home-content { display: flex; flex-direction: column; justify-content: center; min-width: 0; gap: 16px; }
+.gold-home-choices { display: grid; gap: 12px; }
+.gold-smart { height: 56px; font-size: 17px; }
+.gold-choice { height: 86px; justify-content: start; padding: 5px; font-size: 18px; gap: 14px; white-space: normal; }
+.gold-choice img { width: 88px; height: 70px; object-fit: cover; border-radius: 10px; }
+.gold-choice > span { min-width: 0; flex: 1; display: flex; gap: 10px; align-items: center; }
+.gold-choice > svg { margin-inline-end: 10px; }
+.gold-home-brand { padding: 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.gold-brand-stage { flex: 1; min-height: 240px; display: grid; place-items: center; border: 2px solid transparent; border-radius: 16px; background: var(--metal-sheen) padding-box, var(--gold-border) border-box; }
+.gold-brand-stage img { width: 85%; max-height: 380px; object-fit: contain; }
+.gold-brand-caption { font-family: Arial,sans-serif; font-weight: 800; font-size: 14px; text-align: center; color: var(--accent); }
+.gold-brand-caption span { color: var(--muted-foreground); }
+.gold-home > .design-elements { grid-column: 1 / -1; }
+@media (orientation: landscape) {
+  .gold-layout { height: 100dvh; min-height: 0; overflow: hidden; }
+  .gold-home-brand, .gold-home-content { min-height: 0; }
+  .gold-brand-stage { min-height: 0; }
+  .gold-brand-stage img { height: 100%; min-height: 0; }
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .gold-layout { padding: 7px; gap: 10px; grid-template-columns: 72px minmax(0,0.94fr) minmax(0,1.06fr); }
+  .gold-nav { padding: 5px; gap: 5px; border-radius: 16px; }
+  .gold-nav-link { min-height: 0; padding: 3px 1px; font-size: 10px; gap: 2px; border-radius: 12px; }
+  .gold-nav-link svg { height: 22px; width: 22px; }
+  .gold-heading { padding: 0; }
+  .gold-heading h1 { font-size: 24px; }
+  .gold-heading p { font-size: 11px; margin: 3px 0; }
+  .gold-heading h2 { font-size: 10px; }
+  .gold-channel-pane { gap: 7px; }
+  .gold-control { height: 36px; border-radius: 12px; font-size: 12px; }
+  .gold-list-toolbar { gap: 5px; }
+  .gold-list-toolbar .gold-control { font-size: 10px; gap: 2px; }
+  .gold-group-select { height: 36px; font-size: 12px; border-radius: 10px; padding-inline: 6px; }
+  .gold-channel-row { height: 51px; font-size: 13px; padding: 5px 8px; }
+  .gold-channel-logo { height: 34px; width: 34px; }
+  .gold-viewer { padding: 7px; gap: 6px; border-radius: 16px; }
+  .gold-player-tools { gap: 5px; }
+  .gold-player-tools .gold-control { height: 42px; font-size: 9px; }
+  .gold-player-tools .gold-control svg { width: 18px; height: 18px; }
+  .gold-now { font-size: 11px; gap: 5px; }
+  .gold-home-content { gap: 10px; }
+  .gold-home-choices { gap: 8px; }
+  .gold-smart { height: 39px; font-size: 14px; }
+  .gold-choice { height: 60px; font-size: 15px; gap: 8px; }
+  .gold-choice img { width: 65px; height: 48px; }
+  .gold-home-brand { padding: 9px; gap: 8px; }
+  .gold-brand-caption { font-size: 10px; }
+}
+@media (orientation: portrait) {
+  .gold-layout { grid-template-columns: minmax(0,1fr); padding: 10px 10px 96px; gap: 15px; }
+  .gold-nav-rail { position: fixed; z-index: 50; bottom: 6px; inset-inline: 8px; height: 74px; grid-template-columns: repeat(6,minmax(0,1fr)); grid-template-rows: 1fr; gap: 4px; padding: 5px; }
+  .gold-nav-link { min-height: 0; font-size: 9px; border-radius: 12px; }
+  .gold-nav-link svg { height: 21px; width: 21px; }
+  .gold-home-brand { grid-row: 1; }
+  .gold-home-content { grid-row: 2; }
+  .gold-heading h1 { font-size: 28px; }
+  .gold-viewer { grid-row: 1; }
+  .gold-player-stage { min-height: 200px; aspect-ratio: 16 / 9; }
+  .gold-channel-pane { grid-row: 2; }
+  .gold-channel-scroll { max-height: 500px; }
+  .gold-brand-stage { min-height: 220px; }
+  .gold-brand-stage img { max-height: 240px; }
 }
