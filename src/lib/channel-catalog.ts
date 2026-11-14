@@ -50,6 +50,20 @@ export function moveEntry(entries: CatalogEntry[], id: string, direction: -1 | 1
   result[next] = current;
   return result.map((e, position) => ({ ...e, position }));
 }
+export function moveEntryToRank(entries: CatalogEntry[], id: string, rank: number): CatalogEntry[] {
+  const ordered = [...entries].sort((a, b) => a.position - b.position);
+  const current = ordered.find(e => e.channel.id === id && !e.deleted);
+  if (!current || !Number.isInteger(rank) || rank < 1) return entries;
+  const group = ordered.filter(e => !e.deleted && e.channel.category === current.channel.category);
+  const from = group.findIndex(e => e.channel.id === id);
+  group.splice(from, 1);
+  group.splice(Math.min(rank - 1, group.length), 0, current);
+  let index = 0;
+  return ordered.map((e, position) => {
+    const replacement = !e.deleted && e.channel.category === current.channel.category ? group[index++] : e;
+    return { ...(replacement ?? e), position };
+  });
+}
 export function channelFromForm(name: string, category: Channel["category"], link: string, description: string, thumbnail: string): Channel {
   const url = new URL(link.trim());
   let youtubeId: string | undefined;
