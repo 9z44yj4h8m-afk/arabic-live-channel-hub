@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { ChannelImporter } from "@/components/channel-importer";
 import { DesignEditor } from "@/components/design-editor";
 import { SubscriptionEditor } from "@/components/subscription-editor";
+import { AdminDashboardShell, AdminOverview, type AdminArea } from "@/components/admin-dashboard-shell";
 import { CategoryLabelsEditor } from "@/components/category-labels-editor";
 import { getAdminSession, unlockAdmin, lockAdmin } from "@/lib/channel-admin.functions";
-import { channelFromForm, moveEntry, saveCatalogSchema, type CatalogEntry } from "@/lib/channel-catalog";
+import { channelFromForm, moveEntry, moveEntryToRank, saveCatalogSchema, type CatalogEntry } from "@/lib/channel-catalog";
 import { getAdminCatalog, saveAdminCatalog } from "@/lib/channel-catalog.functions";
 import { CatalogSectionsEditor } from "@/components/catalog-sections-editor";
 import { editChannel, type CatalogSection } from "@/lib/catalog-sections";
@@ -33,7 +34,7 @@ function ManagementPage() {
   const [message, setMessage] = useState("");
   const [signingIn, setSigningIn] = useState(false);
   const [password, setPassword] = useState("");
-  const [area, setArea] = useState<"channels" | "design" | "categories" | "subscription">("channels");
+  const [area, setArea] = useState<AdminArea>("home");
   const sessionFn = useServerFn(getAdminSession);
   const unlock = useServerFn(unlockAdmin);
   const lock = useServerFn(lockAdmin);
@@ -58,30 +59,22 @@ function ManagementPage() {
     queryClient.removeQueries({ queryKey: ["admin-catalog"] });
     queryClient.removeQueries({ queryKey: ["design-draft"] });
   }
-  return <div className="min-h-screen overflow-x-hidden bg-background text-foreground" dir="rtl">
-    <header className="border-b border-border bg-surface px-4 py-5">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-        <div className="flex items-center gap-3"><ShieldCheck className="size-7 text-accent" /><div><p className="text-xs font-bold text-accent" dir="ltr">ALMOGHANI</p><h1 className="text-xl font-bold">إدارة القنوات</h1></div></div>
-        {identity.data?.unlocked && <Button variant="ghost" onClick={signOut} title="تسجيل الخروج" aria-label="تسجيل الخروج" size="icon"><LogOut /></Button>}
-      </div>
-    </header>
-    <main className={`mx-auto px-4 py-6 ${area === "design" ? "max-w-7xl" : "max-w-4xl"}`}>
-      {identity.data?.unlocked && <div className="mb-6 flex flex-wrap gap-2 border-b border-border pb-4" role="tablist" aria-label="أقسام الإدارة"><Button role="tab" aria-selected={area === "channels"} variant={area === "channels" ? "default" : "outline"} onClick={() => setArea("channels")}>إدارة القنوات</Button><Button role="tab" aria-selected={area === "design"} variant={area === "design" ? "default" : "outline"} onClick={() => setArea("design")}>🎨 تعديل التصميم</Button><Button role="tab" aria-selected={area === "categories"} variant={area === "categories" ? "default" : "outline"} onClick={() => setArea("categories")}>🏷️ أسماء التصنيفات</Button></div>}
-      {identity.data?.unlocked && <Button className="mb-4" variant={area === "subscription" ? "default" : "outline"} onClick={() => setArea("subscription")}>اشتراك Smarters</Button>}
+  const editor = catalog.data && identity.data?.unlocked ? <CatalogEditor initial={catalog.data} key={catalog.data.revision} area={area} onNavigate={setArea} onSignOut={signOut} /> : null;
+  if (editor) return editor;
+  return <AdminDashboardShell area={area} onSignOut={identity.data?.unlocked ? signOut : undefined}>
       {identity.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : !identity.data?.unlocked ?
         <div className="mx-auto max-w-sm py-16 text-center">
           <ShieldCheck className="mx-auto mb-5 size-12 text-accent" /><h2 className="mb-6 text-xl font-bold">دخول الإدارة</h2>
           <form onSubmit={signIn} className="grid gap-3"><label className="grid gap-2 text-right text-sm">الرقم السري<input type="password" inputMode="numeric" autoComplete="current-password" required maxLength={128} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 w-full rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent" /></label><Button type="submit" size="lg" disabled={signingIn || identity.isError}>{signingIn ? <LoaderCircle className="animate-spin" /> : <ShieldCheck />}دخول</Button></form>
           {identity.isError && <p role="alert" className="mt-4 text-sm text-accent">تعذّر فتح اللوحة. أعد تحميل الصفحة.</p>}
           {message && <p role="alert" className="mt-4 text-sm text-accent">{message}</p>}
-        </div> : area === "subscription" ? <SubscriptionEditor /> : area === "design" ? <DesignEditor /> : area === "categories" ? <CategoryLabelsEditor /> : catalog.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : catalog.error ?
+        </div> : catalog.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : catalog.error ?
         <div className="py-12 text-center"><ShieldCheck className="mx-auto mb-4 size-10 text-accent" /><h2 className="text-xl font-bold">تعذّر تحميل القنوات</h2><p className="mt-3 text-sm text-muted-foreground">حاول مجددًا أو أعد فتح اللوحة بالرقم السري.</p><Button className="mt-5" variant="outline" onClick={() => catalog.refetch()}>إعادة المحاولة</Button></div> : catalog.data ?
-        <CatalogEditor initial={catalog.data} key={catalog.data.revision} /> : null}
-    </main>
-  </div>;
+        null : null}
+  </AdminDashboardShell>;
 }
 
-function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revision: number; sections: CatalogSection[] } }) {
+function CatalogEditor({ initial, area, onNavigate, onSignOut }: { initial: { entries: CatalogEntry[]; revision: number; sections: CatalogSection[] }; area: AdminArea; onNavigate: (area: AdminArea) => void; onSignOut: () => void }) {
   const [entries, setEntries] = useState(initial.entries);
   const design = useSiteDesign();
   const [sections, setSections] = useState(initial.sections);
@@ -104,7 +97,12 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
   const save = useServerFn(saveAdminCatalog);
   const client = useQueryClient();
   const activeCount = entries.filter((e) => !e.deleted).length;
-  const rows = [...entries].sort((a, b) => a.position - b.position).filter((e) => e.deleted === (tab === "deleted") && (!categoryFilter || e.channel.category === categoryFilter) && e.channel.name.includes(filter));
+  const [page, setPage] = useState(1);
+  const rows = [...entries].sort((a, b) => a.position - b.position).filter((e) => e.deleted === (tab === "deleted") && (!categoryFilter || e.channel.category === categoryFilter) && e.channel.name.includes(filter) && (area !== "movies" || ["مسلسلات وأفلام", "أفلام كاملة"].includes(e.channel.category)));
+  const pageCount = Math.max(1, Math.ceil(rows.length / 50));
+  const currentPage = Math.min(page, pageCount);
+  const visibleRows = rows.slice((currentPage - 1) * 50, currentPage * 50);
+  const rankOf = (entry: CatalogEntry) => [...entries].sort((a, b) => a.position - b.position).filter(e => !e.deleted && e.channel.category === entry.channel.category).findIndex(e => e.channel.id === entry.channel.id) + 1;
   function change(next: CatalogEntry[]) { setEntries(next); setDirty(true); setMessage(""); }
   async function handleSave() {
     setSaving(true); setMessage("");
@@ -139,9 +137,19 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
   }
   const allSelectedHidden = selected.size > 0 && entries.filter((e) => !e.deleted && selected.has(e.channel.id)).every((e) => e.hidden);
   const inputClass = "h-11 w-full min-w-0 rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent";
-  return <>
+  function resetChanges() {
+    if (!window.confirm("إلغاء جميع التغييرات غير المحفوظة؟")) return;
+    setEntries(initial.entries); setSections(initial.sections); setRevision(initial.revision); setDirty(false); setSelected(new Set()); setMessage("");
+  }
+  const areaTitle = area === "movies" ? "قنوات الأفلام والمسلسلات" : area === "categories" ? "إدارة الأقسام والتصنيفات" : area === "design" ? "إدارة التصميم والمظهر" : area === "subscription" ? "اشتراك سمارت" : "إدارة القنوات";
+  return <AdminDashboardShell area={area} onNavigate={onNavigate} onSignOut={onSignOut} onSave={handleSave} onReset={resetChanges} dirty={dirty} saving={saving}>
+    {area === "home" ? <AdminOverview entries={entries} sections={sections.filter(s => !s.deleted).length} onNavigate={onNavigate} /> : area === "design" ? <DesignEditor /> : area === "subscription" ? <SubscriptionEditor liveOnly /> : <>
+    <div className="admin-page-heading"><h1>{areaTitle}</h1><span>{dirty ? "تغييرات غير محفوظة" : "القائمة محفوظة"}</span></div>
+    {area !== "categories" && <>
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">{activeCount} قناة <span className="mx-2">·</span> {dirty ? "تغييرات غير محفوظة" : "القائمة محفوظة"}</p><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={saving} onClick={() => { setImporting(true); setAdding(false); }}><FileUp />استيراد ملف</Button><Button onClick={() => { setAdding(true); setImporting(false); }}><Plus />إضافة قناة</Button></div></div>
-    <CatalogSectionsEditor sections={sections.map((s) => ({ ...s, title: sectionTitle(s.category) }))} entries={entries} onChange={(next, rows) => { setSections(next); change(rows); if (!next.some((s) => !s.deleted && s.category === category)) setCategory(next.find((s) => !s.deleted)?.category ?? ""); setCategoryFilter(""); }} />
+    </>}
+    {area === "categories" && <><CatalogSectionsEditor sections={sections.map((s) => ({ ...s, title: sectionTitle(s.category) }))} entries={entries} onChange={(next, rows) => { setSections(next); change(rows); if (!next.some((s) => !s.deleted && s.category === category)) setCategory(next.find((s) => !s.deleted)?.category ?? ""); setCategoryFilter(""); }} /><CategoryLabelsEditor /></>}
+    {area !== "categories" && <>
     {importing && <ChannelImporter categories={categories} entries={entries} onClose={() => setImporting(false)} onImport={(next) => { change(next); setImporting(false); setTab("active"); setFilter(""); setCategoryFilter(""); setSelected(new Set()); setMessage(`تمت إضافة ${next.length - entries.length} قناة؛ اضغط حفظ لاعتمادها.`); }} />}
     {adding && <form onSubmit={add} className="mb-6 border-y border-border py-5">
       <div className="mb-4 flex items-center justify-between"><h2 className="font-bold">قناة جديدة</h2><Button type="button" variant="ghost" size="icon" aria-label="إغلاق الإضافة" title="إغلاق" onClick={() => setAdding(false)}><X /></Button></div>
@@ -154,7 +162,7 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
       </div><Button type="submit" className="mt-4"><Plus />إضافة للقائمة</Button>
     </form>}
     <div className="mb-4 flex border-b border-border" role="tablist" aria-label="حالة القنوات">{(["active", "deleted"] as const).map((value) => <Button key={value} role="tab" aria-selected={tab === value} variant="ghost" className={`rounded-none border-b-2 ${tab === value ? "border-accent text-accent" : "border-transparent text-muted-foreground"}`} onClick={() => { setTab(value); setSelected(new Set()); }}>{value === "active" ? `القنوات (${activeCount})` : `المحذوفة (${entries.length - activeCount})`}</Button>)}</div>
-    <div className="mb-4 grid gap-3 sm:grid-cols-2"><label className="relative"><Search className="absolute right-3 top-3 size-5 text-muted-foreground" /><input aria-label="بحث عن قناة" placeholder="بحث عن قناة" value={filter} onChange={(e) => setFilter(e.target.value)} className={`${inputClass} pr-10`} /></label><select aria-label="تصفية القسم" className={inputClass} value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}><option value="">كل الأقسام</option>{categories.map((c) => <option key={c} value={c}>{sectionTitle(c)}</option>)}</select></div>
+    <div className="mb-4 grid gap-3 sm:grid-cols-2"><label className="relative"><Search className="absolute right-3 top-3 size-5 text-muted-foreground" /><input aria-label="بحث عن قناة" placeholder="بحث عن قناة" value={filter} onChange={(e) => { setFilter(e.target.value); setPage(1); }} className={`${inputClass} pr-10`} /></label><select aria-label="تصفية القسم" className={inputClass} value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}><option value="">كل الأقسام</option>{categories.map((c) => <option key={c} value={c}>{sectionTitle(c)}</option>)}</select></div>
     {tab === "active" && rows.length > 0 && <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
       <label className="flex cursor-pointer items-center gap-2 text-sm font-bold"><input type="checkbox" className="size-5 accent-accent" checked={rows.every((r) => selected.has(r.channel.id))} onChange={(e) => { const next = new Set(selected); rows.forEach((r) => { if (e.target.checked) next.add(r.channel.id); else next.delete(r.channel.id); }); setSelected(next); }} />تحديد الكل</label>
       <div className="flex flex-wrap gap-2">
@@ -162,10 +170,11 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
       <Button variant="outline" size="sm" disabled={!selected.size} onClick={deleteSelected}><Trash2 />{selected.size ? `حذف المحدد (${selected.size})` : "حذف المحدد"}</Button>
       </div>
     </div>}
-    <div className="divide-y divide-border">{rows.map((entry) => <div key={entry.channel.id} className="flex flex-wrap items-center gap-2 py-3">
+    <div className="divide-y divide-border">{visibleRows.map((entry) => <div key={entry.channel.id} className="admin-channel-row">
       {!entry.deleted && <input type="checkbox" className="size-5 shrink-0 accent-accent" aria-label={`تحديد ${entry.channel.name}`} checked={selected.has(entry.channel.id)} onChange={() => toggleSelected(entry.channel.id)} />}
-      <img src={entry.channel.thumbnail} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/icon-192.png"; }} className="h-12 w-16 shrink-0 rounded-md bg-surface object-contain" />
+      <img src={entry.channel.thumbnail} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/icon-192.png"; }} loading="lazy" className="h-12 w-16 shrink-0 rounded-md bg-surface object-contain" />
       <div className="min-w-0 flex-1"><p className="break-words text-sm font-bold">{entry.channel.name}{entry.hidden && !entry.deleted && <span className="ms-2 text-xs font-normal text-accent">مخفية عن الشاشة</span>}</p><p className="mt-1 text-xs text-muted-foreground">{sectionTitle(entry.channel.category)}</p></div>
+      {!entry.deleted && <label className="admin-rank"><span>الترتيب</span><input key={`${entry.channel.id}-${entry.position}`} type="number" min={1} max={entries.filter(e => !e.deleted && e.channel.category === entry.channel.category).length} defaultValue={rankOf(entry)} aria-label={`ترتيب ${entry.channel.name}`} onBlur={e => { const rank = Number(e.currentTarget.value); if (rank !== rankOf(entry)) change(moveEntryToRank(entries, entry.channel.id, rank)); }} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }} /></label>}
       <div className="flex shrink-0 flex-wrap gap-1">{entry.deleted ? <Button variant="outline" size="sm" onClick={() => change(entries.map((e) => e.channel.id === entry.channel.id ? { ...e, deleted: false } : e))}><RotateCcw />استرداد</Button> : <>
         <Button variant="ghost" size="icon" title="تغيير اسم القناة ونقلها" aria-label={`تعديل ونقل ${entry.channel.name}`} onClick={() => { setEditing(entry.channel.id); setNewName(entry.channel.name); setNewCategory(entry.channel.category); }}><Pencil /></Button>
         <Button variant="ghost" size="icon" aria-label={`${entry.hidden ? "إظهار" : "إخفاء"} ${entry.channel.name}`} title={entry.hidden ? "إظهار في شاشة العرض" : "إخفاء من شاشة العرض"} onClick={() => change(entries.map((e) => e.channel.id === entry.channel.id ? { ...e, hidden: !e.hidden } : e))}>{entry.hidden ? <EyeOff /> : <Eye />}</Button>
@@ -180,9 +189,12 @@ function CatalogEditor({ initial }: { initial: { entries: CatalogEntry[]; revisi
       </form>}
     </div>)}</div>
     {!rows.length && <p className="py-10 text-center text-sm text-muted-foreground">{tab === "deleted" ? "لا توجد قنوات محذوفة" : "لا توجد قنوات مطابقة"}</p>}
+    {pageCount > 1 && <nav className="admin-pagination" aria-label="صفحات القنوات"><Button variant="outline" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>السابق</Button><span>{currentPage} / {pageCount} · {rows.length} قناة</span><Button variant="outline" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}>التالي</Button></nav>}
+    </>}
     <footer className="sticky bottom-0 mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background/95 py-4 backdrop-blur">
       <p role="status" className="text-sm text-accent">{message || (dirty ? "تغييرات غير محفوظة" : "")}</p>
-      <Button size="lg" disabled={!dirty || saving} onClick={handleSave}>{saving ? <LoaderCircle className="animate-spin" /> : dirty ? <Save /> : <Check />}{saving ? "جارٍ الحفظ" : "حفظ"}</Button>
+      <Button className="admin-save-all" size="lg" disabled={!dirty || saving} onClick={handleSave}>{saving ? <LoaderCircle className="animate-spin" /> : dirty ? <Save /> : <Check />}{saving ? "جارٍ الحفظ" : "حفظ"}</Button>
     </footer>
-  </>;
+    </>}
+  </AdminDashboardShell>;
 }

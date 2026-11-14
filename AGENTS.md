@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture
+- Render administration through one responsive dashboard shell with scoped semantic tokens and the existing password session; treat uploaded dashboard screenshots as references, not interactive pages, so statistics and edits stay real and public styling is unchanged.
 - Keep the reference-style home in GoldHome and share metallic controls and responsive rail navigation with IptvBrowser through global semantic tokens, so viewing pages and entry choices remain visually consistent without changing playback or authorization.
 
 - Keep home, live broadcasts and category views explicit in PortalPage, with AppBottomNav shared by channel and movie pages, so the homepage never mounts a player or content lists and each navigation button opens its own section.

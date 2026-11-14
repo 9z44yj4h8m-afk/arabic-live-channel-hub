@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { activeChannels, moveEntry, seedEntries, channelFromForm, saveCatalogSchema } from "@/lib/channel-catalog";
+import { activeChannels, moveEntry, moveEntryToRank, seedEntries, channelFromForm, saveCatalogSchema } from "@/lib/channel-catalog";
 
 describe("channel administration", () => {
   it("can save every existing channel including the existing HLS relay links", () => {
@@ -20,6 +20,13 @@ describe("channel administration", () => {
   });
   it("moves a channel up within its section", () => {
     expect(activeChannels(moveEntry(seedEntries(), "alarabiya", -1))[0]?.id).toBe("alarabiya");
+  });
+  it("moves a channel directly to the entered section rank without changing other sections", () => {
+    const entries = seedEntries();
+    const moved = moveEntryToRank(entries, "alarabiya", 1);
+    expect(activeChannels(moved).filter(c => c.category === "إخبارية")[0]?.id).toBe("alarabiya");
+    expect(moved.filter(e => e.channel.category !== "إخبارية").map(e => e.channel.id)).toEqual(entries.filter(e => e.channel.category !== "إخبارية").map(e => e.channel.id));
+    expect(saveCatalogSchema.safeParse({ revision: 1, entries: moved }).success).toBe(true);
   });
   it("hidden channels are not shown on the display screen", () => {
     const entries = seedEntries();
