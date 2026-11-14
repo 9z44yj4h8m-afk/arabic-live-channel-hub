@@ -61,7 +61,7 @@ function ManagementPage() {
   }
   const editor = catalog.data && identity.data?.unlocked ? <CatalogEditor initial={catalog.data} key={catalog.data.revision} area={area} onNavigate={setArea} onSignOut={signOut} /> : null;
   if (editor) return editor;
-  return <AdminDashboardShell area={area} onSignOut={identity.data?.unlocked ? signOut : undefined}>
+  return <AdminDashboardShell area={area} {...(identity.data?.unlocked ? { onSignOut: signOut } : {})}>
       {identity.isPending ? <LoaderCircle className="mx-auto animate-spin text-accent" /> : !identity.data?.unlocked ?
         <div className="mx-auto max-w-sm py-16 text-center">
           <ShieldCheck className="mx-auto mb-5 size-12 text-accent" /><h2 className="mb-6 text-xl font-bold">دخول الإدارة</h2>
@@ -76,6 +76,7 @@ function ManagementPage() {
 
 function CatalogEditor({ initial, area, onNavigate, onSignOut }: { initial: { entries: CatalogEntry[]; revision: number; sections: CatalogSection[] }; area: AdminArea; onNavigate: (area: AdminArea) => void; onSignOut: () => void }) {
   const [entries, setEntries] = useState(initial.entries);
+  const [savedState, setSavedState] = useState(initial);
   const design = useSiteDesign();
   const [sections, setSections] = useState(initial.sections);
   const categories = sections.filter((s) => !s.deleted).map((s) => s.category);
@@ -108,6 +109,7 @@ function CatalogEditor({ initial, area, onNavigate, onSignOut }: { initial: { en
     setSaving(true); setMessage("");
     try {
       const result = await save({ data: saveCatalogSchema.parse({ entries, revision, sections }) });
+      setSavedState({ entries, sections, revision: result.revision });
       setRevision(result.revision); setDirty(false); setMessage("تم حفظ التغييرات");
       await Promise.all([client.invalidateQueries({ queryKey: ["public-channels"] }), client.invalidateQueries({ queryKey: ["catalog-sections"] })]);
     } catch (error) { setMessage(`لم يتم الحفظ: ${error instanceof Error ? error.message : "خطأ غير معروف"}`); }
@@ -139,7 +141,7 @@ function CatalogEditor({ initial, area, onNavigate, onSignOut }: { initial: { en
   const inputClass = "h-11 w-full min-w-0 rounded-md border border-input bg-surface px-3 text-sm outline-none focus:border-accent";
   function resetChanges() {
     if (!window.confirm("إلغاء جميع التغييرات غير المحفوظة؟")) return;
-    setEntries(initial.entries); setSections(initial.sections); setRevision(initial.revision); setDirty(false); setSelected(new Set()); setMessage("");
+    setEntries(savedState.entries); setSections(savedState.sections); setRevision(savedState.revision); setDirty(false); setSelected(new Set()); setMessage("");
   }
   const areaTitle = area === "movies" ? "قنوات الأفلام والمسلسلات" : area === "categories" ? "إدارة الأقسام والتصنيفات" : area === "design" ? "إدارة التصميم والمظهر" : area === "subscription" ? "اشتراك سمارت" : "إدارة القنوات";
   return <AdminDashboardShell area={area} onNavigate={onNavigate} onSignOut={onSignOut} onSave={handleSave} onReset={resetChanges} dirty={dirty} saving={saving}>
